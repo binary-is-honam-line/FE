@@ -82,19 +82,27 @@ const Search = () => {
   };
 
   const createMarker = (position, place) => {
+    const imageSrc = `${process.env.PUBLIC_URL}/monkey.png`; // 마커 이미지의 주소
+    const imageSize = new kakao.maps.Size(50, 50); // 마커 이미지의 크기
+    const imageOption = { offset: new kakao.maps.Point(15, 15) }; // 마커 이미지의 좌표에 일치시킬 좌표 (이미지의 중앙)
+    
+    const markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize, imageOption); // 마커 이미지를 생성
+  
     const marker = new kakao.maps.Marker({
       position,
       map: map,
+      image: markerImage, // 생성한 마커 이미지를 설정
     });
-
+  
     kakao.maps.event.addListener(marker, "click", () => {
       console.log("Marker clicked:", place); // 마커 클릭 시 콘솔에 출력
       setSelectedPlace(place);
       setIsModalOpen(true);
     });
-
+  
     return marker;
   };
+  
 
   const removeMarkers = () => {
     markers.forEach((marker) => marker.setMap(null));
@@ -211,7 +219,7 @@ const Container = styled.div`
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background-color: #fefefe;
+  background-color: #F6E96B;
 `;
 
 const MapContainer = styled.div`
@@ -277,7 +285,7 @@ const BottomBar = styled.div`
   display: flex;
   justify-content: space-around;
   align-items: center;
-  background-color: #ffffff;
+  background-color: #A2CA71;
   box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
 `;
 
