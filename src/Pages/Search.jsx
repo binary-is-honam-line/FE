@@ -169,6 +169,8 @@ const Search = () => {
 
   return (
     <Container>
+      <BackgroundImageLeft />
+      <BackgroundImageRight />
       <MapContainer>
         <SearchBarWrapper>
           <SearchInput
@@ -234,6 +236,32 @@ const Container = styled.div`
   align-items: center;
   height: 100vh;
   background-color: #F6E96B;
+  position: relative;
+  overflow: hidden;
+`;
+
+const BackgroundImageLeft = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc(50% - 187.5px);
+  height: 100%;
+  background-image: url('/left.png');
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: left center;
+`;
+
+const BackgroundImageRight = styled.div`
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: calc(50% - 187.5px);
+  height: 100%;
+  background-image: url('/right.png');
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: right center;
 `;
 
 const MapContainer = styled.div`
@@ -243,11 +271,12 @@ const MapContainer = styled.div`
   display: flex;
   flex-direction: column;
   position: relative;
+  z-index: 1;
 `;
 
 const SearchBarWrapper = styled.div`
   position: absolute;
-  top: 20px;;
+  top: 20px;
   left: 50%;
   transform: translateX(-50%);
   width: 80%;

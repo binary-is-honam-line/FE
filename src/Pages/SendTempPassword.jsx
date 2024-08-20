@@ -2,29 +2,57 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 
+const logoImage = `${process.env.PUBLIC_URL}/monkeys.png`;
+
 const Container = styled.div`
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background-color: #FEFEFE;
+    position: relative;
+    overflow: hidden;
+`;
+
+const BackgroundImageLeft = styled.div`
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: calc(50% - 187.5px); /* 50%에서 AppWrapper의 절반을 뺀 값 */
+    height: 100%;
+    background-image: url('/left.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: left center;
+`;
+
+const BackgroundImageRight = styled.div`
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: calc(50% - 187.5px); /* 50%에서 AppWrapper의 절반을 뺀 값 */
+    height: 100%;
+    background-image: url('/right.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: right center;
 `;
 
 const AppWrapper = styled.div`
-    width: 375px;
+    width: 100%;
+    max-width: 375px;
     height: 100vh;
-    background-color: #FEF69B;
+    background-color: #A2CA71;
     padding: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
     position: relative;
+    z-index: 1;
 `;
 
-const Logo = styled.div`
-    font-size: 50px;
-    font-weight: bold;
-    margin-top: 50%;
+const Logo = styled.img`
+    width: 200px;
+    margin-top: 60%;
     margin-bottom: 20%;
 `;
 
@@ -32,14 +60,14 @@ const Input = styled.input`
     width: 80%;
     padding: 15px;
     margin-bottom: 5%;
-    border: 1px solid #00D065;
+    border: 1px solid #DEDEDE;
     border-radius: 5px;
     font-size: 20px;
 `;
 
 const SendTempPasswordButton = styled.button`
-    background-color: #FFD8E1;
-    color: black;
+    background-color: #387F39;
+    color: white;
     border: none;
     padding: 10px 20px;
     border-radius: 50px;
@@ -47,8 +75,9 @@ const SendTempPasswordButton = styled.button`
     font-size: 35px;
     width: 90%;
     margin-bottom: 20px;
+
     &:hover {
-        color: #FF86FF;
+        color: black;
     }
 `;
 
@@ -71,7 +100,7 @@ const ModalContent = styled.div`
     border-radius: 5px;
     text-align: center;
     width: 80%;
-    max-width: 300px; /* 모달의 최대 너비 설정 */
+    max-width: 300px;
 `;
 
 const ModalText = styled.p`
@@ -88,6 +117,7 @@ const ModalButton = styled.button`
     cursor: pointer;
     font-size: 25px;
     margin-top: 20px;
+
     &:hover {
         color: #FF86FF;
     }
@@ -102,7 +132,6 @@ const SendTempPassword = () => {
     const handleSendTempPasswordClick = async () => {
         try {
             // 실제로는 API 호출
-            // 현재는 예시로 console에 출력하는 것으로 대체
             console.log(`Sending temporary password to ${email}...`);
 
             // API 호출이 성공했다고 가정하고, 모달 열기 및 상태 업데이트
@@ -116,7 +145,6 @@ const SendTempPassword = () => {
 
     const closeModal = () => {
         setModalOpen(false);
-        // 모달 닫기 시 상태 초기화
         setTempPasswordSent(false);
         setEmail('');
     };
@@ -129,8 +157,10 @@ const SendTempPassword = () => {
 
     return (
         <Container>
+            <BackgroundImageLeft />
+            <BackgroundImageRight />
             <AppWrapper>
-                <Logo>Logo</Logo>
+                <Logo src={logoImage} alt="Logo" />
                 <Input
                     type="email"
                     placeholder="이메일"

@@ -7,6 +7,8 @@ const CreatorMode = ({ stories = [] }) => {
 
   return (
     <Container>
+      <BackgroundImageLeft />
+      <BackgroundImageRight />
       <AppWrapper>
         <Header>
           <BackButton onClick={() => navigate('/select')}>뒤로 가기</BackButton>
@@ -43,18 +45,45 @@ const Container = styled.div`
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background-color: #FEFEFE;
+  position: relative;
+  overflow: hidden;
+`;
+
+const BackgroundImageLeft = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc(50% - 187.5px); /* 50%에서 AppWrapper의 절반을 뺀 값 */
+  height: 100%;
+  background-image: url('/left.png');
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: left center;
+`;
+
+const BackgroundImageRight = styled.div`
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: calc(50% - 187.5px); /* 50%에서 AppWrapper의 절반을 뺀 값 */
+  height: 100%;
+  background-image: url('/right.png');
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: right center;
 `;
 
 const AppWrapper = styled.div`
-  width: 375px;
+  width: 100%;
+  max-width: 375px;
   height: 100vh;
-  background-color: #FEF69B;
+  background-color: white;
   padding: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
   position: relative;
+  z-index: 1;
 `;
 
 const Header = styled.div`
@@ -85,18 +114,18 @@ const Title = styled.h1`
 const AddStoryButton = styled.button`
   display: block;
   padding: 10px 20px;
-  background-color: #D9D9D9;
+  background-color: #BEDC74;
   color: black;
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  width: 100%;
+  width: 90%;
   height: 50px;
   margin-top: 10px;
   margin-bottom: 20px;
 
   &:hover {
-    background-color: #0056b3;
+    background-color: #A2CA71;
   }
 `;
 

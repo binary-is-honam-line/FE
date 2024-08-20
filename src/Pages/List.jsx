@@ -40,6 +40,8 @@ const List = () => {
   
   return (
     <Container>
+      <BackgroundImageLeft />
+      <BackgroundImageRight />
       <AppWrapper>
         <Header>
           <Title>내가 담은 장소</Title>
@@ -84,8 +86,32 @@ const Container = styled.div`
   align-items: center;
   height: 100vh;
   width: 100%;
-  background-color: #F6E96B;
   position: relative;
+  overflow: hidden;
+`;
+
+const BackgroundImageLeft = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc(50% - 187.5px);
+  height: 100%;
+  background-image: url('/left.png');
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: left center;
+`;
+
+const BackgroundImageRight = styled.div`
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: calc(50% - 187.5px);
+  height: 100%;
+  background-image: url('/right.png');
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: right center;
 `;
 
 const AppWrapper = styled.div`
@@ -98,6 +124,7 @@ const AppWrapper = styled.div`
   align-items: center;
   overflow: auto;
   margin-bottom: 80px;
+  z-index: 1;
 `;
 
 const Header = styled.div`
