@@ -5,6 +5,8 @@ import Login from './Pages/Login';
 import FindId from './Pages/FindId';
 import SendTempPassword from './Pages/SendTempPassword';
 import Signup from './Pages/Signup';
+
+import PrivateRoute from './Pages/PrivateRoute';
 import SelectMode from './Pages/SelectMode';
 import CreatorMode from './Pages/CreatorMode';
 import Search from './Pages/Search';
@@ -25,10 +27,12 @@ const App = () => {
         <Route path="/find-id" element={<FindId />} />
         <Route path="/send-temp-password" element={<SendTempPassword />} />
         <Route path="/signup" element={<Signup />} />
-        <Route path="/select" element={<SelectMode />} />
-        <Route path="/creator" element={<CreatorMode />} />
-        <Route path="/search" element={<Search addPlace={addPlace} />} />
-        <Route path="/list" element={<List places={places} />} />
+
+        {/* Private Routes */}
+        <Route path="/select" element={<PrivateRoute element={<SelectMode />} />} />
+        <Route path="/creator" element={<PrivateRoute element={<CreatorMode />} />} />
+        <Route path="/search" element={<PrivateRoute element={<Search addPlace={addPlace} />} />} />
+        <Route path="/list" element={<PrivateRoute element={<List places={places} />} />} />
       </Routes>
     </Router>
   );
