@@ -82,7 +82,7 @@ const Search = () => {
   };
 
   const createMarker = (position, place) => {
-    const imageSrc = `${process.env.PUBLIC_URL}/monkey.png`; // 마커 이미지의 주소
+    const imageSrc = `${process.env.PUBLIC_URL}/monkey1.png`; // 마커 이미지의 주소
     const imageSize = new kakao.maps.Size(50, 50); // 마커 이미지의 크기
     const imageOption = { offset: new kakao.maps.Point(15, 15) }; // 마커 이미지의 좌표에 일치시킬 좌표 (이미지의 중앙)
     
@@ -233,41 +233,45 @@ const MapContainer = styled.div`
 
 const SearchBarWrapper = styled.div`
   position: absolute;
-  top: 10px;
+  top: 20px;;
   left: 50%;
   transform: translateX(-50%);
   width: 80%;
+  height: 50px;
   z-index: 10;
   display: flex;
   justify-content: space-between;
+  border-radius: 15px;
+  overflow: hidden;
+  border: 2px solid #A2CA71;
 `;
 
 const SearchInput = styled.input`
   flex: 1;
   padding: 10px;
-  margin-right: 5px;
-  border-radius: 5px;
   border: none;
+  outline: none;
 `;
 
 const SearchButton = styled.button`
-  padding: 0 10px;
-  border-radius: 5px;
-  background-color: #D9D9D9;
+  padding: 0 20px;
+  background-color: #A2CA71;
   border: none;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   &:hover {
-    background-color: #ff86ff;
+    background-color: #81B265;
   }
 `;
 
 const SearchIcon = styled.img`
   width: 24px;
   height: 24px;
+  filter: brightness(0) invert(1);
 `;
+
 
 const MapContents = styled.div`
   width: 100%;
@@ -329,7 +333,7 @@ const ModalBackdrop = styled.div`
 `;
 
 const ModalContent = styled.div`
-  background-color: #fefefe;
+  background-color: #BEDC74;
   padding: 20px;
   border-radius: 10px;
   width: 80%;
@@ -359,7 +363,7 @@ const ModalTextarea = styled.textarea`
   height: 60px;
   padding: 10px;
   border-radius: 5px;
-  border: 1px solid #ccc;
+  border: none;
   resize: none;
   margin-bottom: 20px;
 `;
@@ -373,6 +377,7 @@ const ModalButtons = styled.div`
 const ModalButton = styled.button`
   padding: 10px 20px;
   border-radius: 5px;
+  background-color: transparent;
   border: none;
   cursor: pointer;
   font-size: 16px;
