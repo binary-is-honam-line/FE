@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import api from './Api';
+
+const logoImage = `${process.env.PUBLIC_URL}/monkey1.png`;
 
 const Container = styled.div`
     display: flex;
@@ -22,9 +24,8 @@ const AppWrapper = styled.div`
     position: relative;
 `;
 
-const Logo = styled.div`
-    font-size: 50px;
-    font-weight: bold;
+const Logo = styled.img`
+    width: 100px;
     margin-top: 50%;
     margin-bottom: 20%;
 `;
@@ -48,6 +49,7 @@ const LoginButton = styled.button`
     font-size: 35px;
     width: 90%;
     margin-bottom: 20px;
+
     &:hover {
         color: #FF86FF;
     }
@@ -64,6 +66,7 @@ const Link = styled.a`
     cursor: pointer;
     text-decoration: none;
     color: black;
+
     &:hover {
         text-decoration: underline;
     }
@@ -98,32 +101,52 @@ const SignupLink = styled.a`
     cursor: pointer;
     text-decoration: underline;
     color: #00D065;
+
     &:hover {
         text-decoration: underline;
     }
 `;
 
+const ErrorMessage = styled.p`
+    color: red;
+    font-size: 14px;
+`;
+
 const Login = () => {
     const navigate = useNavigate();
-    const [userId, setUserId] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [errorMessage, setErrorMessage] = useState('');
+
+    useEffect(() => {
+        // 페이지 로드 시 세션을 확인하여 이미 로그인된 상태라면 홈으로 리다이렉트
+        const user = sessionStorage.getItem('user');
+        if (user) {
+            navigate('/search');
+        }
+    }, [navigate]);
 
     const handleLoginClick = async () => {
         try {
-            // api 호출 예시
-            const response = await axios.post('https://api.example.com/login', {
-                userId,
-                password,
-            });
-            const data = response.data;
-            // 로그인 성공 시 처리
-            console.log('로그인 성공:', data);
+            const params = new URLSearchParams();
+            params.append('email', email);
+            params.append('password', password);
 
-            // 홈페이지로 이동
-            navigate('/home');
+            const response = await api.post('/login', params, {
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+            });
+
+            // 세션에 사용자 정보 저장
+            sessionStorage.setItem('user', JSON.stringify(response.data.user));
+
+            console.log('로그인 성공:', response.data.message); // 로그인 성공 메시지 출력
+            console.log('로그인 성공한 이메일:', response.data.user); // 로그인 성공한 이메일 출력
+            navigate('/search'); // 로그인 성공 시 홈 페이지로 이동
         } catch (error) {
-            // 에러 처리
-            console.error('로그인 실패:', error);
+            console.error('로그인 실패:', error.response?.data || error.message); // 서버에서 반환된 에러 메시지 출력
+            setErrorMessage(error.response?.data?.message || '로그인에 실패했습니다. 다시 시도해주세요.'); // 에러 메시지 설정
         }
     };
 
@@ -140,35 +163,38 @@ const Login = () => {
     };
 
     return (
-        <Container>
-            <AppWrapper>
-                <Logo>Logo</Logo>
-                <Input
-                    type="text"
-                    placeholder="아이디"
-                    value={userId}
-                    onChange={(e) => setUserId(e.target.value)}
-                />
-                <Input
-                    type="password"
-                    placeholder="비밀번호"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                />
-                <LoginButton onClick={handleLoginClick}>로그인하기</LoginButton>
-                <LinkContainer>
-                    <Link onClick={handleFindIdClick}>아이디찾기</Link>
-                    <span>|</span>
-                    <Link onClick={handleSendTempPasswordClick}>임시 비번 전송</Link>
-                </LinkContainer>
-                <Footer>
-                    <QuestionMark>?</QuestionMark>
-                    <span>아직 계정이 없으신가요?</span>
-                    <FooterText></FooterText>
-                    <SignupLink onClick={handleSignupClick}>회원가입</SignupLink>
-                </Footer>
-            </AppWrapper>
-        </Container>
+        <>
+            <Container>
+                <AppWrapper>
+                    <Logo src={logoImage} alt="Logo" />
+                    <Input
+                        type="email"
+                        placeholder="이메일"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                    />
+                    <Input
+                        type="password"
+                        placeholder="비밀번호"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                    />
+                    <LoginButton onClick={handleLoginClick}>로그인하기</LoginButton>
+                    {errorMessage && <ErrorMessage>{errorMessage}</ErrorMessage>}
+                    <LinkContainer>
+                        <Link onClick={handleFindIdClick}>아이디찾기</Link>
+                        <span>|</span>
+                        <Link onClick={handleSendTempPasswordClick}>임시 비번 전송</Link>
+                    </LinkContainer>
+                    <Footer>
+                        <QuestionMark>?</QuestionMark>
+                        <span>아직 계정이 없으신가요?</span>
+                        <FooterText></FooterText>
+                        <SignupLink onClick={handleSignupClick}>회원가입</SignupLink>
+                    </Footer>
+                </AppWrapper>
+            </Container>
+        </>
     );
 };
 

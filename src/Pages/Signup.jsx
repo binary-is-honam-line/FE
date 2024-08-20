@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
+import api from './Api';
 
 const Container = styled.div`
     display: flex;
@@ -127,16 +128,49 @@ const ModalButton = styled.button`
     }
 `;
 
+const ErrorMessage = styled.p`
+    color: red;
+    font-size: 14px;
+    margin-top: 10px;
+`;
+
 const Signup = () => {
     const navigate = useNavigate();
     const [modalOpen, setModalOpen] = useState(false);
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [phone, setPhone] = useState('');
+    const [password, setPassword] = useState('');
+    const [passwordChk, setPasswordChk] = useState('');
+    const [nickname, setNickname] = useState('');
+    const [error, setError] = useState('');
 
     const handleSignupClick = async () => {
+        if (!name || !email || !phone || !password || !passwordChk || !nickname) {
+            setError('모든 필드를 입력해주세요.');
+            return;
+        }
+
+        if (password !== passwordChk) {
+            setError('비밀번호가 일치하지 않습니다.');
+            return;
+        }
+
         try {
-            // 회원가입 api
+            const response = await api.post('/join', {
+                email,
+                password,
+                passwordCheck: passwordChk,
+                name,
+                nickname,
+                phone,
+            });
+
+            console.log('회원가입 성공:', response.data);
             setModalOpen(true); // 회원가입 성공 시 모달 열기
         } catch (error) {
             console.error('회원가입 에러:', error);
+            setError('회원가입 중 오류가 발생했습니다.');
         }
     };
 
@@ -153,13 +187,44 @@ const Signup = () => {
         <Container>
             <AppWrapper>
                 <Logo>Logo</Logo>
-                <Input type="text" placeholder="이름" />
-                <Input type="email" placeholder="이메일" />
-                <Input type="tel" placeholder="전화번호" />
-                <Input type="password" placeholder="비밀번호" />
-                <Input type="password" placeholder="비밀번호 재입력" />
-                <Input type="nickname" placeholder="닉네임" />
+                <Input 
+                    type="text" 
+                    placeholder="이름" 
+                    value={name} 
+                    onChange={(e) => setName(e.target.value)} 
+                />
+                <Input 
+                    type="email" 
+                    placeholder="이메일" 
+                    value={email} 
+                    onChange={(e) => setEmail(e.target.value)} 
+                />
+                <Input 
+                    type="tel" 
+                    placeholder="전화번호" 
+                    value={phone} 
+                    onChange={(e) => setPhone(e.target.value)} 
+                />
+                <Input 
+                    type="password" 
+                    placeholder="비밀번호" 
+                    value={password} 
+                    onChange={(e) => setPassword(e.target.value)} 
+                />
+                <Input 
+                    type="password" 
+                    placeholder="비밀번호 재입력" 
+                    value={passwordChk} 
+                    onChange={(e) => setPasswordChk(e.target.value)} 
+                />
+                <Input 
+                    type="text" 
+                    placeholder="닉네임" 
+                    value={nickname} 
+                    onChange={(e) => setNickname(e.target.value)} 
+                />
                 <SignupButton onClick={handleSignupClick}>가입하기</SignupButton>
+                {error && <ErrorMessage>{error}</ErrorMessage>}
                 <Footer>
                     <QuestionMark>?</QuestionMark>
                     <span>이미 계정이 있으신가요?</span>
