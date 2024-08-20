@@ -7,6 +7,7 @@ const Search = () => {
   const [map, setMap] = useState(null);
   const [keyword, setKeyword] = useState("");
   const [markers, setMarkers] = useState([]);
+  const [registeredPlaces, setRegisteredPlaces] = useState([]);
   const [selectedPlace, setSelectedPlace] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [routes, setRoutes] = useState([]);
@@ -66,13 +67,16 @@ const Search = () => {
   };
 
   const displayPlaces = (places) => {
-    removeMarkers();
+    removeTempMarkers();
     const bounds = new kakao.maps.LatLngBounds();
     const newMarkers = [];
 
     places.forEach((place) => {
       const position = new kakao.maps.LatLng(place.y, place.x);
-      const marker = createMarker(position, place);
+      const registeredPlace = registeredPlaces.find(
+        (registered) => registered.place_name === place.place_name
+      );
+      const marker = createMarker(position, place, registeredPlace);
       bounds.extend(position);
       newMarkers.push(marker);
     });
@@ -81,8 +85,14 @@ const Search = () => {
     map.setBounds(bounds);
   };
 
-  const createMarker = (position, place) => {
-    const imageSrc = `${process.env.PUBLIC_URL}/monkey1.png`; // 마커 이미지의 주소
+  const createMarker = (position, place, registeredPlace) => {
+    let imageSrc = `${process.env.PUBLIC_URL}/monkeys.png`; // 기본 마커 이미지의 주소
+
+    if (registeredPlace) {
+      const index = registeredPlaces.indexOf(registeredPlace) + 1;
+      imageSrc = `${process.env.PUBLIC_URL}/monkey${index}.png`; // 등록된 마커 이미지의 주소
+    }
+
     const imageSize = new kakao.maps.Size(50, 50); // 마커 이미지의 크기
     const imageOption = { offset: new kakao.maps.Point(15, 15) }; // 마커 이미지의 좌표에 일치시킬 좌표 (이미지의 중앙)
     
@@ -103,8 +113,7 @@ const Search = () => {
     return marker;
   };
   
-
-  const removeMarkers = () => {
+  const removeTempMarkers = () => {
     markers.forEach((marker) => marker.setMap(null));
     setMarkers([]);
   };
@@ -116,39 +125,44 @@ const Search = () => {
   const handleRegister = () => {
     if (!selectedPlace) return;
 
-    // 기존 마커 제거
-    removeMarkers();
+    // 새로운 마커를 지도에 추가 (이전 마커들은 유지)
+    setRoutes((prevRoutes) => {
+      const newRoutes = [...prevRoutes, selectedPlace];
+      
+      const linePath = newRoutes.map(
+        (route) => new kakao.maps.LatLng(route.y, route.x)
+      );
+      
+      const markerIndex = newRoutes.length;
+      const imageSrc = `${process.env.PUBLIC_URL}/monkey${markerIndex}.png`; // 각 마커 인덱스에 해당하는 이미지 파일 경로
+      const imageSize = new kakao.maps.Size(50, 50); // 마커 이미지의 크기
+      const imageOption = { offset: new kakao.maps.Point(15, 15) }; // 마커 이미지의 좌표에 일치시킬 좌표 (이미지의 중앙)
+      const markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize, imageOption);
+      
+      const marker = new kakao.maps.Marker({
+        map: map,
+        position: new kakao.maps.LatLng(selectedPlace.y, selectedPlace.x),
+        image: markerImage,
+      });
 
-    setRoutes((prevRoutes) => [...prevRoutes, selectedPlace]);
+      // 새로 추가된 마커를 포함해 모든 마커들을 저장
+      setMarkers(prevMarkers => [...prevMarkers, marker]);
 
-    const linePath = [...routes, selectedPlace].map(
-      (route) => new kakao.maps.LatLng(route.y, route.x)
-    );
+      // 등록된 장소를 저장
+      setRegisteredPlaces(prevPlaces => [...prevPlaces, selectedPlace]);
 
-    // 새로운 마커를 지도에 추가
-    const markerIndex = routes.length + 1;
-    new kakao.maps.Marker({
-      map: map,
-      position: new kakao.maps.LatLng(selectedPlace.y, selectedPlace.x),
+      // 경로를 직선으로 연결
+      const polyline = new kakao.maps.Polyline({
+        path: linePath,
+        strokeWeight: 5,
+        strokeColor: "#FF0000",
+        strokeOpacity: 0.7,
+        strokeStyle: "solid",
+      });
+      polyline.setMap(map);
+
+      return newRoutes;
     });
-
-    // 마커에 순서 번호 표시
-    new kakao.maps.CustomOverlay({
-      map: map,
-      position: new kakao.maps.LatLng(selectedPlace.y, selectedPlace.x),
-      content: `<div style="padding:5px;background:white;border:1px solid black;border-radius:3px;font-weight:bold;">${markerIndex}</div>`,
-      yAnchor: 1.6,
-    });
-
-    // 경로를 직선으로 연결
-    const polyline = new kakao.maps.Polyline({
-      path: linePath,
-      strokeWeight: 5,
-      strokeColor: "#FF0000",
-      strokeOpacity: 0.7,
-      strokeStyle: "solid",
-    });
-    polyline.setMap(map);
 
     closeModal();
   };
