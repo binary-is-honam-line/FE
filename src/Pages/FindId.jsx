@@ -2,28 +2,56 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 
+const logoImage = `${process.env.PUBLIC_URL}/monkeys.png`;
+
 const Container = styled.div`
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background-color: #FEFEFE;
+    position: relative;
+    overflow: hidden;
+`;
+
+const BackgroundImageLeft = styled.div`
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: calc(50% - 187.5px); /* 50%에서 AppWrapper의 절반을 뺀 값 */
+    height: 100%;
+    background-image: url('/left.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: left center;
+`;
+
+const BackgroundImageRight = styled.div`
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: calc(50% - 187.5px); /* 50%에서 AppWrapper의 절반을 뺀 값 */
+    height: 100%;
+    background-image: url('/right.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: right center;
 `;
 
 const AppWrapper = styled.div`
-    width: 375px;
+    width: 100%;
+    max-width: 375px;
     height: 100vh;
-    background-color: #FEF69B;
+    background-color: #A2CA71;
     padding: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
     position: relative;
+    z-index: 1;
 `;
 
-const Logo = styled.div`
-    font-size: 50px;
-    font-weight: bold;
+const Logo = styled.img`
+    width: 200px;
     margin-top: 50%;
     margin-bottom: 20%;
 `;
@@ -32,14 +60,14 @@ const Input = styled.input`
     width: 80%;
     padding: 15px;
     margin-bottom: 5%;
-    border: 1px solid #00D065;
+    border: 1px solid #DEDEDE;
     border-radius: 5px;
     font-size: 20px;
 `;
 
 const FindIdButton = styled.button`
-    background-color: #FFD8E1;
-    color: black;
+    background-color: #387F39;
+    color: white;
     border: none;
     padding: 10px 20px;
     border-radius: 50px;
@@ -47,8 +75,9 @@ const FindIdButton = styled.button`
     font-size: 35px;
     width: 90%;
     margin-bottom: 20px;
+
     &:hover {
-        color: #FF86FF;
+        color: black;
     }
 `;
 
@@ -71,7 +100,7 @@ const ModalContent = styled.div`
     border-radius: 5px;
     text-align: center;
     width: 80%;
-    max-width: 300px; /* 모달의 최대 너비 설정 */
+    max-width: 300px;
 `;
 
 const ModalText = styled.p`
@@ -88,9 +117,16 @@ const ModalButton = styled.button`
     cursor: pointer;
     font-size: 25px;
     margin-top: 20px;
+
     &:hover {
         color: #FF86FF;
     }
+`;
+
+const ErrorMessage = styled.p`
+    color: red;
+    font-size: 14px;
+    margin-top: 10px;
 `;
 
 const FindId = () => {
@@ -99,21 +135,22 @@ const FindId = () => {
     const [userName, setUserName] = useState('');
     const [phoneNumber, setPhoneNumber] = useState('');
     const [foundId, setFoundId] = useState('');
+    const [errorMessage, setErrorMessage] = useState('');
 
     const handleFindIdClick = async () => {
         try {
-            // api 호출 예시
+            // API 호출 예시
             const response = await fetch(`https://api.example.com/find-id?name=${userName}&phone=${phoneNumber}`);
             const data = await response.json();
             if (data.success) {
                 setFoundId(data.id); // API에서 가져온 아이디 설정
                 setModalOpen(true); // 모달 열기
             } else {
-                // 에러 처리
-                console.error('아이디를 찾을 수 없습니다.');
+                setErrorMessage('아이디를 찾을 수 없습니다.');
             }
         } catch (error) {
             console.error('API 호출 중 오류가 발생했습니다.', error);
+            setErrorMessage('API 호출 중 오류가 발생했습니다.');
         }
     };
 
@@ -129,8 +166,10 @@ const FindId = () => {
 
     return (
         <Container>
+            <BackgroundImageLeft />
+            <BackgroundImageRight />
             <AppWrapper>
-                <Logo>Logo</Logo>
+                <Logo src={logoImage} alt="Logo" />
                 <Input
                     type="text"
                     placeholder="이름"
@@ -144,6 +183,7 @@ const FindId = () => {
                     onChange={(e) => setPhoneNumber(e.target.value)}
                 />
                 <FindIdButton onClick={handleFindIdClick}>아이디 찾기</FindIdButton>
+                {errorMessage && <ErrorMessage>{errorMessage}</ErrorMessage>}
 
                 {modalOpen && (
                     <ModalBackdrop>

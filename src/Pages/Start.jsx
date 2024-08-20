@@ -7,48 +7,59 @@ const Container = styled.div`
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background-color: #FEFEFE;
+    position: relative;
+    overflow: hidden; /* 넘치는 부분을 숨김 */
+`;
+
+const BackgroundImageLeft = styled.div`
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: calc((100% - 375px) / 2); /* 남은 공간의 절반을 사용 */
+    height: 100%;
+    background-image: url('/left.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+`;
+
+const BackgroundImageRight = styled.div`
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: calc((100% - 375px) / 2); /* 남은 공간의 절반을 사용 */
+    height: 100%;
+    background-image: url('/right.png');
+    background-repeat: no-repeat;
+    background-size: cover;
 `;
 
 const AppWrapper = styled.div`
-    width: 375px;
+    width: 375px; /* width 값을 고정 */
     height: 100vh;
-    background-color: #FEF69B;
+    background-color: #A2CA71;
     padding: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    position: relative;
-`;
-
-const Logo = styled.div`
-    font-size: 24px;
-    font-weight: bold;
-    position: absolute;
-    top: 20px;
-    left: 20px;
-`;
-
-const Title = styled.div`
-    margin: 20px 0;
-    font-size: 18px;
-    text-align: center;
-    flex-grow: 1;
-    display: flex;
-    align-items: center;
     justify-content: center;
+    position: relative;
+    z-index: 1;
+`;
+
+const Logo = styled.img`
+    width: 60%;
+    margin-bottom: 20%;
 `;
 
 const StartButton = styled.button`
-    background-color: #FFD8E1;
-    color: black;
+    background-color: #387F39;
+    color: white;
     border: none;
     padding: 10px 20px;
     border-radius: 50px;
     cursor: pointer;
     font-size: 35px;
     width: 60%;
-    margin-bottom: 20%;
 `;
 
 const Start = () => {
@@ -58,17 +69,14 @@ const Start = () => {
         navigate('/login');
     };
 
-    const handleLogoClick = () => {
-        navigate('/select');
-    };
-
     return (
         <Container>
+            <BackgroundImageLeft />
             <AppWrapper>
-                <Logo onClick={handleLogoClick}>Logo</Logo>
-                <Title>오랑께</Title>
+                <Logo src="/logo.png" alt="Logo" />
                 <StartButton onClick={handleStartClick}>시작하기</StartButton>
             </AppWrapper>
+            <BackgroundImageRight />
         </Container>
     );
 };
