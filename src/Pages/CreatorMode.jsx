@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
-import api from './Api'; // Api.jsx를 사용하기 위한 import
+import api from './Api';
+
+const PAGE_SIZE = 5; // 페이지당 퀘스트 수
 
 const CreatorMode = () => {
   const navigate = useNavigate();
   const [stories, setStories] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1); // 현재 페이지 상태
   const [selectedStory, setSelectedStory] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [questName, setQuestName] = useState('');
@@ -15,7 +18,6 @@ const CreatorMode = () => {
   const [selectedImage, setSelectedImage] = useState(null);
 
   useEffect(() => {
-    // 전체 퀘스트 목록을 불러오는 API 호출
     api.get('/api/quests/')
       .then(response => {
         const quests = response.data;
@@ -26,7 +28,6 @@ const CreatorMode = () => {
               return quest;
             })
         );
-
         Promise.all(fetchImages).then(updatedQuests => {
           setStories(updatedQuests);
         });
@@ -37,35 +38,29 @@ const CreatorMode = () => {
   }, []);
 
   const handleAddStory = () => {
-    // 퀘스트 생성 API 호출
     api.post('/api/quests/create')
-    .then(() => {
-      // 퀘스트 생성 후 전체 퀘스트 목록을 다시 조회하여 가장 최근의 퀘스트를 찾습니다.
-      return api.get('/api/quests/');
-    })
-    .then(response => {
-      const quests = response.data;
-      if (quests.length > 0) {
-        const latestQuest = quests[quests.length - 1];
-        navigate(`/search/${latestQuest.questId}`);
-      } else {
-        console.error("생성된 퀘스트가 없습니다.");
-      }
-    })
-    .catch(error => {
-      console.error("퀘스트를 생성하거나 조회하는데 실패했습니다.", error);
-    });
+      .then(() => api.get('/api/quests/'))
+      .then(response => {
+        const quests = response.data;
+        if (quests.length > 0) {
+          const latestQuest = quests[quests.length - 1];
+          navigate(`/search/${latestQuest.questId}`);
+        } else {
+          console.error("생성된 퀘스트가 없습니다.");
+        }
+      })
+      .catch(error => {
+        console.error("퀘스트를 생성하거나 조회하는데 실패했습니다.", error);
+      });
   };
 
   const handleEditStory = (questId) => {
-    // 퀘스트 상세 정보 및 이미지 불러오기
     api.get(`/api/quests/${questId}`)
       .then(response => {
         const { questName, location, mainStory } = response.data;
         setQuestName(questName);
         setLocation(location);
         setMainStory(mainStory);
-
         return api.get(`/api/quests/${questId}/image`, { responseType: 'blob' });
       })
       .then(imageResponse => {
@@ -85,7 +80,6 @@ const CreatorMode = () => {
   };
 
   const handleSaveChanges = () => {
-    // 퀘스트 이름, 위치, 메인스토리 수정 API 호출
     api.post(`/api/quests/${selectedStory}/save`, null, {
       params: {
         questName,
@@ -94,20 +88,15 @@ const CreatorMode = () => {
       }
     })
       .then(() => {
-        // 이미지가 선택된 경우 이미지 수정 API 호출
         if (selectedImage) {
           const formData = new FormData();
           formData.append('file', selectedImage);
-
           return api.post(`/api/quests/${selectedStory}/image`, formData, {
-            headers: {
-              'Content-Type': 'multipart/form-data'
-            }
+            headers: { 'Content-Type': 'multipart/form-data' }
           });
         }
       })
       .then(() => {
-        // 수정 완료 후 모달 닫기 및 퀘스트 목록 갱신
         setShowModal(false);
         window.location.reload();
       })
@@ -117,7 +106,6 @@ const CreatorMode = () => {
   };
 
   const handleDeleteStory = (questId) => {
-    // 퀘스트 삭제 API 호출
     api.delete(`/api/quests/${questId}`)
       .then(() => {
         setStories(prevStories => prevStories.filter(story => story.questId !== questId));
@@ -126,6 +114,14 @@ const CreatorMode = () => {
         console.error("퀘스트를 삭제하는데 실패했습니다.", error);
       });
   };
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  // 페이지당 퀘스트 리스트
+  const paginatedStories = stories.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const totalPages = Math.ceil(stories.length / PAGE_SIZE);
 
   return (
     <Container>
@@ -138,8 +134,8 @@ const CreatorMode = () => {
         <Title>내가 만든 퀘스트</Title>
         <AddStoryButton onClick={handleAddStory}>퀘스트 추가하기</AddStoryButton>
         <StoryList>
-          {stories.length > 0 ? (
-            stories.map((story, index) => (
+          {paginatedStories.length > 0 ? (
+            paginatedStories.map((story, index) => (
               <StoryBox key={index}>
                 <StoryContent>
                   <StoryInfo>
@@ -165,6 +161,21 @@ const CreatorMode = () => {
             <NoStoryMessage>아직 생성된 퀘스트가 없습니다.</NoStoryMessage>
           )}
         </StoryList>
+
+        {/* 페이지네이션 컨트롤 */}
+        {totalPages > 1 && (
+          <Pagination>
+            {Array.from({ length: totalPages }, (_, index) => (
+              <PageButton
+                key={index}
+                onClick={() => handlePageChange(index + 1)}
+                active={index + 1 === currentPage}
+              >
+                {index + 1}
+              </PageButton>
+            ))}
+          </Pagination>
+        )}
       </AppWrapper>
 
       {showModal && (
@@ -220,7 +231,7 @@ const BackgroundImageLeft = styled.div`
   position: absolute;
   top: 0;
   left: 0;
-  width: calc(50% - 187.5px); /* 50%에서 AppWrapper의 절반을 뺀 값 */
+  width: calc(50% - 187.5px); 
   height: 100%;
   background-image: url('/left.png');
   background-repeat: no-repeat;
@@ -232,7 +243,7 @@ const BackgroundImageRight = styled.div`
   position: absolute;
   top: 0;
   right: 0;
-  width: calc(50% - 187.5px); /* 50%에서 AppWrapper의 절반을 뺀 값 */
+  width: calc(50% - 187.5px); 
   height: 100%;
   background-image: url('/right.png');
   background-repeat: no-repeat;
@@ -355,7 +366,7 @@ const StoryAuthor = styled.p`
 
 const StoryImage = styled.img`
   width: 120px;
-  height: auto;
+  height: 120px;
   object-fit: cover;
   border-radius: 10px;
   margin-left: 20px;
@@ -385,6 +396,27 @@ const NoStoryMessage = styled.div`
   text-align: center;
   color: #aaa;
   font-size: 16px;
+`;
+
+const Pagination = styled.div`
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+`;
+
+const PageButton = styled.button`
+  padding: 8px 12px;
+  margin: 0 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: ${({ active }) => (active ? '#A2CA71' : '#fff')};
+  color: ${({ active }) => (active ? '#fff' : '#333')};
+  cursor: pointer;
+
+  &:hover {
+    background-color: #A2CA71;
+    color: #fff;
+  }
 `;
 
 const ModalOverlay = styled.div`

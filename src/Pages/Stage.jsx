@@ -52,21 +52,6 @@ const Stage = () => {
       });
   };
 
-  const handleDelete = () => {
-    // 스테이지 삭제 API 호출
-    if (window.confirm('정말로 이 스테이지를 삭제하시겠습니까?')) {
-      api.delete(`/api/stages/${questId}/${stageId}`)
-        .then(() => {
-          alert('스테이지가 성공적으로 삭제되었습니다.');
-          navigate(`/list/${questId}`);
-        })
-        .catch(error => {
-          console.error('스테이지 삭제에 실패했습니다.', error);
-          alert('스테이지 삭제에 실패했습니다.');
-        });
-    }
-  };
-
   return (
     <Container>
       <BackgroundImageLeft />
