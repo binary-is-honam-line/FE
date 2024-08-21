@@ -8,28 +8,26 @@ const List = () => {
   const { questId } = useParams();
   const [places, setPlaces] = useState([]);
   const [isStoryModalOpen, setStoryModalOpen] = useState(false);
-  const [isEditModalOpen, setEditModalOpen] = useState(false);
+  const [selectedQuest, setSelectedQuest] = useState(null); // 선택된 퀘스트의 정보
+  const [questName, setQuestName] = useState('');
+  const [location, setLocation] = useState('');
+  const [mainStory, setMainStory] = useState('');
+  const [imagePreview, setImagePreview] = useState('');
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [isDistributing, setIsDistributing] = useState(false); // 배포 중 상태 추가
 
   useEffect(() => {
     if (questId) {
       api.get(`/api/stages/${questId}`)
         .then(response => {
-          console.log('API Response:', response.data);
           if (response.data && response.data.length > 0) {
             setPlaces(response.data);
-            response.data.forEach(place => {
-              console.log("Stage ID:", place.stageId);
-            });
           } else {
             console.error("No stages found for the given Quest ID.");
           }
         })
         .catch(error => {
-          if (error.response && error.response.status === 404) {
-            console.error("스테이지를 찾을 수 없습니다. Quest ID가 올바른지 확인하세요.");
-          } else {
-            console.error("API call failed. Details:", error);
-          }
+          console.error("API call failed. Details:", error);
         });
     }
   }, [questId]);
@@ -46,6 +44,65 @@ const List = () => {
           alert('스테이지 삭제에 실패했습니다.');
         });
     }
+  };
+
+  const handleOpenModal = () => {
+    // 퀘스트 상세 정보 불러오기
+    api.get(`/api/quests/${questId}`)
+      .then(response => {
+        const { questName, location, mainStory } = response.data;
+        setQuestName(questName);
+        setLocation(location);
+        setMainStory(mainStory);
+
+        return api.get(`/api/quests/${questId}/image`, { responseType: 'blob' });
+      })
+      .then(imageResponse => {
+        setImagePreview(URL.createObjectURL(imageResponse.data));
+        setSelectedQuest(questId);
+        setStoryModalOpen(true);
+      })
+      .catch(error => {
+        console.error("퀘스트 정보를 불러오는데 실패했습니다.", error);
+      });
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    setSelectedImage(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
+
+  const handleDistribute = () => {
+    setIsDistributing(true); // 배포 중 상태로 설정
+    api.post(`/api/quests/${selectedQuest}/save`, null, {
+      params: {
+        questName,
+        location,
+        mainStory,
+      }
+    })
+      .then(() => {
+        if (selectedImage) {
+          const formData = new FormData();
+          formData.append('file', selectedImage);
+
+          return api.post(`/api/quests/${selectedQuest}/image`, formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data'
+            }
+          });
+        }
+      })
+      .then(() => {
+        setIsDistributing(false);
+        alert('배포가 완료되었습니다.');
+        navigate('/creator');
+      })
+      .catch(error => {
+        console.error("퀘스트를 수정하는데 실패했습니다.", error);
+        setIsDistributing(false);
+      });
   };
 
   const PlaceBox = ({ stageId, name, address }) => (
@@ -69,7 +126,7 @@ const List = () => {
         <Header>
           <Title>내가 담은 스테이지</Title>
         </Header>
-        <DistributeButton onClick={() => setStoryModalOpen(true)}>퀘스트 배포하기</DistributeButton>
+        <DistributeButton onClick={handleOpenModal}>퀘스트 배포하기</DistributeButton>
         <PlaceList>
           {places.map((place) => (
             <PlaceBox
@@ -96,9 +153,49 @@ const List = () => {
           <ButtonLabel>작가</ButtonLabel>
         </BottomButton>
       </BottomBar>
+
+      {/* 배포 모달 */}
+      {isStoryModalOpen && (
+        <ModalOverlay>
+          <ModalContent>
+            <ModalTitle>퀘스트 배포</ModalTitle>
+            <ModalLabel>이름</ModalLabel>
+            <ModalInput
+              type="text"
+              value={questName}
+              onChange={(e) => setQuestName(e.target.value)}
+            />
+            <ModalLabel>위치</ModalLabel>
+            <ModalInput
+              type="text"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+            />
+            <ModalLabel>메인 스토리</ModalLabel>
+            <ModalTextarea
+              value={mainStory}
+              onChange={(e) => setMainStory(e.target.value)}
+            />
+            <ModalLabel>대표 사진</ModalLabel>
+            <ModalImagePreview src={imagePreview} alt="대표 사진" />
+            <ModalInput
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+            />
+            <ModalButtons>
+              <ModalButton onClick={() => setStoryModalOpen(false)}>취소</ModalButton>
+              <ModalButton onClick={handleDistribute} disabled={isDistributing}>
+                {isDistributing ? '배포 중...' : '배포'}
+              </ModalButton>
+            </ModalButtons>
+          </ModalContent>
+        </ModalOverlay>
+      )}
     </Container>
   );
 };
+
 
 const Container = styled.div`
   display: flex;
@@ -260,6 +357,90 @@ const ButtonImage = styled.img`
 const ButtonLabel = styled.div`
   font-size: 12px;
   text-align: center;
+`;
+
+const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+`;
+
+const ModalContent = styled.div`
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  width: 60%;
+  max-width: 400px;
+`;
+
+const ModalTitle = styled.h2`
+  margin-bottom: 10px;
+`;
+
+const ModalLabel = styled.label`
+  margin-bottom: 5px;
+  display: block;
+  text-align: left;
+  font-weight: bold;
+`;
+
+const ModalInput = styled.input`
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-sizing: border-box;
+`;
+
+const ModalTextarea = styled.textarea`
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-sizing: border-box;
+`;
+
+const ModalImagePreview = styled.img`
+  width: 100%;
+  max-width: 100px;
+  height: auto;
+  margin-bottom: 10px;
+  border-radius: 5px;
+`;
+
+const ModalButtons = styled.div`
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+`;
+
+const ModalButton = styled.button`
+  padding: 10px 20px;
+  background-color: #99cc66;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  width: 48%;
+
+  &:hover {
+    background-color: #88bb55;
+  }
+
+  &:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
 `;
 
 export default List;
