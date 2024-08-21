@@ -11,6 +11,11 @@ import SelectMode from './Pages/SelectMode';
 import CreatorMode from './Pages/CreatorMode';
 import Search from './Pages/Search';
 import List from './Pages/List';
+import PlayerMode from './Pages/PlayerMode';
+import Mypage from './Pages/Mypage';
+import Edit from './Pages/Edit';
+import PasswordReset from './Pages/PasswordReset';
+
 
 const App = () => {
   const [places, setPlaces] = useState([]);
@@ -33,6 +38,12 @@ const App = () => {
         <Route path="/creator" element={<PrivateRoute element={<CreatorMode />} />} />
         <Route path="/search" element={<PrivateRoute element={<Search addPlace={addPlace} />} />} />
         <Route path="/list" element={<PrivateRoute element={<List places={places} />} />} />
+
+        <Route path="/player" element={<PrivateRoute element={<PlayerMode />} />} />
+        <Route path="/mypage" element={<PrivateRoute element={<Mypage />} />} />
+        <Route path="/edit" element={<PrivateRoute element={<Edit />} />} />
+        <Route path="/password-reset" element={<PrivateRoute element={<PasswordReset />} />} />
+
       </Routes>
     </Router>
   );
