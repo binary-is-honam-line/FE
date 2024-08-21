@@ -61,7 +61,9 @@ const Search = () => {
         return Promise.all(fetchPoints);
       })
       .then(points => {
-        displayStagesOnMap(points.flat(), mapInstance);
+        // 스테이지를 sequenceNumber 순으로 정렬
+        const sortedPoints = points.flat().sort((a, b) => a.sequenceNumber - b.sequenceNumber);
+        displayStagesOnMap(sortedPoints, mapInstance);
       })
       .catch(error => {
         console.error("스테이지를 불러오는데 실패했습니다.", error);
@@ -111,7 +113,6 @@ const Search = () => {
     }
 };
 
-
   const searchPlaces = () => {
     if (!keyword.trim()) {
       alert("키워드를 입력해주세요!");
@@ -159,7 +160,7 @@ const Search = () => {
     let imageSrc = `${process.env.PUBLIC_URL}/monkeys.png`;
 
     if (registeredPlace) {
-      const index = registeredPlaces.indexOf(registeredPlace) + 1;
+      const index = registeredPlace.sequenceNumber;
       imageSrc = `${process.env.PUBLIC_URL}/monkey${index}.png`;
     }
 
