@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from './Api';
 
 const Edit = () => {
     const navigate = useNavigate();
@@ -10,103 +10,124 @@ const Edit = () => {
     const [email, setEmail] = useState('');
     const [nickname, setNickname] = useState('');
     const [phone, setPhone] = useState('');
+    const [showModal, setShowModal] = useState(false);
+    const [modalMessage, setModalMessage] = useState('');
 
     useEffect(() => {
-        // 예시 API 호출로 유저 데이터를 가져옴
-        axios.get('https://api.example.com/user')
-        .then(response => {
-            const { name, email, nickname, phone } = response.data;
-            setName(name);
-            setEmail(email);
-            setNickname(nickname);
-            setPhone(phone);
-        })
-        .catch(error => {
-            console.error("데이터를 가져오는데 실패했습니다.", error);
-        });
+        // API 호출로 유저 데이터를 가져옴
+        api.get('/api/user/info')
+            .then(response => {
+                const { name, email, nickname, phone } = response.data;
+                setName(name);
+                setEmail(email);
+                setNickname(nickname);
+                setPhone(phone);
+            })
+            .catch(error => {
+                console.error("데이터를 가져오는데 실패했습니다.", error);
+                setModalMessage('유저 정보를 불러오는데 실패했습니다. 다시 시도해주세요.');
+                setShowModal(true);
+            });
     }, []);
 
     const handleSave = () => {
         // 변경된 데이터를 저장하는 API 호출
-        axios.put('https://api.example.com/user', {
-            name,
-            nickname,
-            phone,
+        api.put('/api/user/info', null, {
+            params: {
+                name,
+                nickname,
+                phone,
+            }
         })
         .then(response => {
-            alert('정보가 성공적으로 저장되었습니다.');
+            setModalMessage('정보가 성공적으로 저장되었습니다.');
+            setShowModal(true);
+            setTimeout(() => {
+                setShowModal(false);
+                navigate('/mypage');
+            }, 3000);
         })
         .catch(error => {
             console.error("정보를 저장하는데 실패했습니다.", error);
+            setModalMessage('정보 저장에 실패했습니다. 다시 시도해주세요.');
+            setShowModal(true);
         });
     };
 
     return (
         <Container>
-        <BackgroundImageLeft />
-        <BackgroundImageRight />
-        <AppWrapper>
-            <Header>
-            <ImageButton>
-                <ButtonImage src={`${process.env.PUBLIC_URL}/edit.png`} alt="회원 정보 수정" />
-                <ButtonLabel>회원 정보 수정</ButtonLabel>
-            </ImageButton>
-            </Header>
+            <BackgroundImageLeft />
+            <BackgroundImageRight />
+            <AppWrapper>
+                <Header>
+                    <ImageButton>
+                        <ButtonImage src={`${process.env.PUBLIC_URL}/edit.png`} alt="회원 정보 수정" />
+                        <ButtonLabel>회원 정보 수정</ButtonLabel>
+                    </ImageButton>
+                </Header>
 
-            <Form>
-            <Label>이름</Label>
-            <Input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-            />
+                <Form>
+                    <Label>이름</Label>
+                    <Input
+                        type="text"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                    />
 
-            <Label>이메일</Label>
-            <Input
-                type="email"
-                value={email}
-                readOnly
-            />
-            <Hint>*이메일은 수정이 불가합니다.</Hint>
+                    <Label>이메일</Label>
+                    <Input
+                        type="email"
+                        value={email}
+                        readOnly
+                    />
+                    <Hint>*이메일은 수정이 불가합니다.</Hint>
 
-            <Label>닉네임</Label>
-            <Input
-                type="text"
-                value={nickname}
-                onChange={(e) => setNickname(e.target.value)}
-            />
+                    <Label>닉네임</Label>
+                    <Input
+                        type="text"
+                        value={nickname}
+                        onChange={(e) => setNickname(e.target.value)}
+                    />
 
-            <Label>전화번호</Label>
-            <Input
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-            />
+                    <Label>전화번호</Label>
+                    <Input
+                        type="tel"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                    />
 
-            <SaveButton onClick={handleSave}>저장하기</SaveButton>
-            </Form>
+                    <SaveButton onClick={handleSave}>저장하기</SaveButton>
+                </Form>
 
-            <BottomBar>
-            <BottomButton onClick={() => navigate('/player')}>
-                <ButtonImageBottom
-                src={`${process.env.PUBLIC_URL}/search.png`}
-                />
-                <ButtonLabelBottom>퀘스트 검색</ButtonLabelBottom>
-            </BottomButton>
-            <BottomButton onClick={() => navigate('/play')}>
-                <ButtonImageBottom
-                src={`${process.env.PUBLIC_URL}/play.png`}
-                />
-                <ButtonLabelBottom>플레이</ButtonLabelBottom>
-            </BottomButton>
-            <BottomButton onClick={() => navigate('/mypage')}>
-                <ButtonImageBottom
-                src={`${process.env.PUBLIC_URL}/mypage.png`}
-                />
-                <ButtonLabelBottom>마이페이지</ButtonLabelBottom>
-            </BottomButton>
-            </BottomBar>
-        </AppWrapper>
+                <BottomBar>
+                    <BottomButton onClick={() => navigate('/player')}>
+                        <ButtonImageBottom
+                            src={`${process.env.PUBLIC_URL}/search.png`}
+                        />
+                        <ButtonLabelBottom>퀘스트 검색</ButtonLabelBottom>
+                    </BottomButton>
+                    <BottomButton onClick={() => navigate('/play')}>
+                        <ButtonImageBottom
+                            src={`${process.env.PUBLIC_URL}/play.png`}
+                        />
+                        <ButtonLabelBottom>플레이</ButtonLabelBottom>
+                    </BottomButton>
+                    <BottomButton onClick={() => navigate('/mypage')}>
+                        <ButtonImageBottom
+                            src={`${process.env.PUBLIC_URL}/mypage.png`}
+                        />
+                        <ButtonLabelBottom>마이페이지</ButtonLabelBottom>
+                    </BottomButton>
+                </BottomBar>
+            </AppWrapper>
+
+            {showModal && (
+                <ModalOverlay>
+                    <ModalContent>
+                        <ModalMessage>{modalMessage}</ModalMessage>
+                    </ModalContent>
+                </ModalOverlay>
+            )}
         </Container>
     );
 };
@@ -235,7 +256,7 @@ const SaveButton = styled.button`
 `;
 
 const BottomBar = styled.div`
-    width: 100%;  
+    width: 100%;
     max-width: 375px;
     height: 80px;
     display: flex;
@@ -271,6 +292,34 @@ const ButtonImageBottom = styled.img`
 const ButtonLabelBottom = styled.div`
     font-size: 12px;
     text-align: center;
+`;
+
+const ModalOverlay = styled.div`
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+`;
+
+const ModalContent = styled.div`
+    background-color: #BEDC74;
+    padding: 30px 40px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    font-weight: bold;
+`;
+
+const ModalMessage = styled.p`
+    font-size: 18px;
+    color: #333;
+    margin: 0;
 `;
 
 export default Edit;

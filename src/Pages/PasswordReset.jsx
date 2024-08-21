@@ -1,84 +1,107 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from './Api';
 
 const PasswordReset = () => {
     const navigate = useNavigate();
 
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [showModal, setShowModal] = useState(false);
+    const [modalMessage, setModalMessage] = useState('');
+    const [errorMessage, setErrorMessage] = useState('');
 
     const handleSave = () => {
+        setErrorMessage(''); // 에러 메시지 초기화
+
         if (password !== confirmPassword) {
-        alert('비밀번호가 일치하지 않습니다.');
-        return;
+            setErrorMessage('비밀번호가 일치하지 않습니다.');
+            return;
         }
 
-        // 변경된 비밀번호를 저장하는 API 호출
-        axios.put('https://api.example.com/user/password', {
-            password,
+        // 비밀번호를 저장하는 API 호출
+        api.post('/api/user/update-password', null, {
+            params: {
+                password,
+                passwordCheck: confirmPassword,
+            }
         })
         .then(response => {
-            alert('비밀번호가 성공적으로 변경되었습니다.');
-            navigate('/mypage');  // 저장 후 마이페이지로 이동
+            setModalMessage('비밀번호가 성공적으로 변경되었습니다.');
+            setShowModal(true);
+            setTimeout(() => {
+                setShowModal(false);
+                navigate('/mypage');
+            }, 3000);
         })
         .catch(error => {
             console.error("비밀번호를 저장하는데 실패했습니다.", error);
+            setErrorMessage('비밀번호 변경에 실패했습니다. 다시 시도해주세요.');
         });
     };
 
     return (
         <Container>
-        <BackgroundImageLeft />
-        <BackgroundImageRight />
-        <AppWrapper>
-            <Header>
-            <ImageButton>
-                <ButtonImage src={`${process.env.PUBLIC_URL}/password.png`} alt="비밀번호 재설정" />
-                <ButtonLabel>비밀번호 재설정</ButtonLabel>
-            </ImageButton>
-            </Header>
+            <BackgroundImageLeft />
+            <BackgroundImageRight />
+            <AppWrapper>
+                <Header>
+                    <ImageButton>
+                        <ButtonImage src={`${process.env.PUBLIC_URL}/password.png`} alt="비밀번호 재설정" />
+                        <ButtonLabel>비밀번호 재설정</ButtonLabel>
+                    </ImageButton>
+                </Header>
 
-            <Form>
-            <Label>비밀번호 입력</Label>
-            <Input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-            />
+                <Form>
+                    <Label>비밀번호 입력</Label>
+                    <Input
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                    />
 
-            <Label>비밀번호 재입력</Label>
-            <Input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-            />
+                    <Label>비밀번호 재입력</Label>
+                    <Input
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                    />
 
-            <SaveButton onClick={handleSave}>저장하기</SaveButton>
-            </Form>
+                    {errorMessage && <ErrorMessage>{errorMessage}</ErrorMessage>}  {/* 에러 메시지 출력 */}
 
-            <BottomBar>
-            <BottomButton onClick={() => navigate('/player')}>
-                <ButtonImageBottom
-                src={`${process.env.PUBLIC_URL}/search.png`}
-                />
-                <ButtonLabelBottom>퀘스트 검색</ButtonLabelBottom>
-            </BottomButton>
-            <BottomButton onClick={() => navigate('/play')}>
-                <ButtonImageBottom
-                src={`${process.env.PUBLIC_URL}/play.png`}
-                />
-                <ButtonLabelBottom>플레이</ButtonLabelBottom>
-            </BottomButton>
-            <BottomButton onClick={() => navigate('/mypage')}>
-                <ButtonImageBottom
-                src={`${process.env.PUBLIC_URL}/mypage.png`}
-                />
-                <ButtonLabelBottom>마이페이지</ButtonLabelBottom>
-            </BottomButton>
-            </BottomBar>
-        </AppWrapper>
+                    <SaveButton onClick={handleSave}>저장하기</SaveButton>
+                </Form>
+
+                <BottomBar>
+                    <BottomButton onClick={() => navigate('/player')}>
+                        <ButtonImageBottom
+                            src={`${process.env.PUBLIC_URL}/search.png`}
+                        />
+                        <ButtonLabelBottom>퀘스트 검색</ButtonLabelBottom>
+                    </BottomButton>
+                    <BottomButton onClick={() => navigate('/play')}>
+                        <ButtonImageBottom
+                            src={`${process.env.PUBLIC_URL}/play.png`}
+                        />
+                        <ButtonLabelBottom>플레이</ButtonLabelBottom>
+                    </BottomButton>
+                    <BottomButton onClick={() => navigate('/mypage')}>
+                        <ButtonImageBottom
+                            src={`${process.env.PUBLIC_URL}/mypage.png`}
+                        />
+                        <ButtonLabelBottom>마이페이지</ButtonLabelBottom>
+                    </BottomButton>
+                </BottomBar>
+            </AppWrapper>
+
+            {showModal && (
+                <ModalOverlay>
+                    <ModalContent>
+                        <ModalMessage>{modalMessage}</ModalMessage>
+                    </ModalContent>
+                </ModalOverlay>
+            )}
         </Container>
     );
 };
@@ -236,6 +259,41 @@ const ButtonImageBottom = styled.img`
 const ButtonLabelBottom = styled.div`
     font-size: 12px;
     text-align: center;
+`;
+
+const ModalOverlay = styled.div`
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+`;
+
+const ModalContent = styled.div`
+    background-color: #BEDC74;
+    padding: 30px 40px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    font-weight: bold;
+`;
+
+const ModalMessage = styled.p`
+    font-size: 18px;
+    color: #333;
+    margin: 0;
+`;
+
+const ErrorMessage = styled.p`
+    color: red;
+    font-size: 14px;
+    margin-top: -10px;
+    margin-bottom: 15px;
 `;
 
 export default PasswordReset;
