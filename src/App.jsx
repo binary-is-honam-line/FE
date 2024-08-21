@@ -15,6 +15,7 @@ import PlayerMode from './Pages/PlayerMode';
 import Mypage from './Pages/Mypage';
 import Edit from './Pages/Edit';
 import PasswordReset from './Pages/PasswordReset';
+import Stage from './Pages/Stage';  // Stage 컴포넌트 추가
 
 const App = () => {
   const [places, setPlaces] = useState([]);
@@ -36,10 +37,15 @@ const App = () => {
         <Route path="/select" element={<PrivateRoute element={<SelectMode />} />} />
         <Route path="/creator" element={<PrivateRoute element={<CreatorMode />} />} />
         
-        {/* 수정된 부분: questId를 파라미터로 받는 라우트 추가 */}
+        {/* questId를 파라미터로 받는 Search 라우트 */}
         <Route path="/search/:questId" element={<PrivateRoute element={<Search addPlace={addPlace} />} />} />
 
-        <Route path="/list" element={<PrivateRoute element={<List places={places} />} />} />
+        {/* questId를 파라미터로 받는 List 라우트 */}
+        <Route path="/list/:questId" element={<PrivateRoute element={<List places={places} />} />} />
+        
+        {/* questId와 stageId를 파라미터로 받는 Stage 라우트 */}
+        <Route path="/stage/:questId/:stageId" element={<PrivateRoute element={<Stage />} />} />
+
         <Route path="/player" element={<PrivateRoute element={<PlayerMode />} />} />
         <Route path="/mypage" element={<PrivateRoute element={<Mypage />} />} />
         <Route path="/edit" element={<PrivateRoute element={<Edit />} />} />

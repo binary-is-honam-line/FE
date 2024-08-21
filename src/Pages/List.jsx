@@ -1,43 +1,66 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';  // API 호출을 위한 axios 라이브러리
+import { useNavigate, useParams } from 'react-router-dom';
+import api from './Api';
 
 const List = () => {
   const navigate = useNavigate();
+  const { questId } = useParams();
   const [places, setPlaces] = useState([]);
-  const [isStoryModalOpen, setStoryModalOpen] = useState(false);  // 함수 선언 추가
-  const [isEditModalOpen, setEditModalOpen] = useState(false);    // 함수 선언 추가
+  const [isStoryModalOpen, setStoryModalOpen] = useState(false);
+  const [isEditModalOpen, setEditModalOpen] = useState(false);
 
   useEffect(() => {
-    // 로컬 스토리지에서 장소 로드
-    const savedPlaces = JSON.parse(localStorage.getItem('places')) || [];
-    setPlaces(savedPlaces);
-  }, []);
-  
-  const handleDelete = (id) => {
-    // UI에서 해당 박스 제거
-    const updatedPlaces = places.filter((_, index) => index !== id);
-    setPlaces(updatedPlaces);
-  
-    // 로컬 스토리지에서도 삭제
-    localStorage.setItem('places', JSON.stringify(updatedPlaces));
+    if (questId) {
+      api.get(`/api/stages/${questId}`)
+        .then(response => {
+          console.log('API Response:', response.data);
+          if (response.data && response.data.length > 0) {
+            setPlaces(response.data);
+            response.data.forEach(place => {
+              console.log("Stage ID:", place.stageId);
+            });
+          } else {
+            console.error("No stages found for the given Quest ID.");
+          }
+        })
+        .catch(error => {
+          if (error.response && error.response.status === 404) {
+            console.error("스테이지를 찾을 수 없습니다. Quest ID가 올바른지 확인하세요.");
+          } else {
+            console.error("API call failed. Details:", error);
+          }
+        });
+    }
+  }, [questId]);
+
+  const handleDelete = (stageId) => {
+    if (window.confirm('정말로 이 스테이지를 삭제하시겠습니까?')) {
+      api.delete(`/api/stages/${questId}/${stageId}`)
+        .then(() => {
+          alert('스테이지가 성공적으로 삭제되었습니다.');
+          setPlaces(places.filter(place => place.stageId !== stageId));
+        })
+        .catch(error => {
+          console.error('스테이지 삭제에 실패했습니다.', error);
+          alert('스테이지 삭제에 실패했습니다.');
+        });
+    }
   };
-  
-  const PlaceBox = ({ id, name, address, description, onEdit, onDelete }) => (
+
+  const PlaceBox = ({ stageId, name, address }) => (
     <Box>
       <PlaceInfo>
         <PlaceName>{name}</PlaceName>
         <PlaceAddress>{address}</PlaceAddress>
-        <PlaceDescription>{description}</PlaceDescription>
       </PlaceInfo>
       <PlaceButtons>
-        <PlaceButton onClick={onEdit}>수정하기</PlaceButton>
-        <PlaceButton onClick={() => onDelete(id)}>삭제하기</PlaceButton>
+        <PlaceButton onClick={() => navigate(`/stage/${questId}/${stageId}`)}>수정하기</PlaceButton>
+        <PlaceButton onClick={() => handleDelete(stageId)}>삭제하기</PlaceButton>
       </PlaceButtons>
     </Box>
   );
-  
+
   return (
     <Container>
       <BackgroundImageLeft />
@@ -48,25 +71,22 @@ const List = () => {
         </Header>
         <DistributeButton onClick={() => setStoryModalOpen(true)}>퀘스트 배포하기</DistributeButton>
         <PlaceList>
-          {places.map((place, index) => (
+          {places.map((place) => (
             <PlaceBox
-              key={index}
-              id={index}
-              name={place.place_name}
-              address={place.address_name || place.road_address_name}
-              description={"설명을 입력해주세요"}
-              onEdit={() => setEditModalOpen(true)}
-              onDelete={handleDelete}
+              key={place.stageId}
+              stageId={place.stageId}
+              name={place.stageName}
+              address={place.stageAddress}
             />
           ))}
         </PlaceList>
       </AppWrapper>
       <BottomBar>
-        <BottomButton onClick={() => navigate('/search')}>
+        <BottomButton onClick={() => navigate(`/search/${questId}`)}>
           <ButtonImage src={`${process.env.PUBLIC_URL}/search.png`} alt="Search" />
           <ButtonLabel>스테이지 검색</ButtonLabel>
         </BottomButton>
-        <BottomButton onClick={() => navigate('/list')}>
+        <BottomButton onClick={() => navigate(`/list/${questId}`)}>
           <ButtonImage src={`${process.env.PUBLIC_URL}/list.png`} alt="List" />
           <ButtonLabel>스테이지 목록</ButtonLabel>
         </BottomButton>
@@ -78,7 +98,7 @@ const List = () => {
       </BottomBar>
     </Container>
   );
-};  
+};
 
 const Container = styled.div`
   display: flex;
@@ -178,12 +198,6 @@ const PlaceName = styled.h2`
 `;
 
 const PlaceAddress = styled.p`
-  margin: 5px 0;
-  font-size: 14px;
-  color: #666;
-`;
-
-const PlaceDescription = styled.p`
   margin: 5px 0;
   font-size: 14px;
   color: #666;
