@@ -212,7 +212,7 @@ const Login = () => {
                     <LinkContainer>
                         <Link onClick={handleFindIdClick}>아이디찾기</Link>
                         <span>|</span>
-                        <Link onClick={handleSendTempPasswordClick}>임시 비번 전송</Link>
+                        <Link onClick={handleSendTempPasswordClick}>임시 비밀번호</Link>
                     </LinkContainer>
                     <Footer>
                         <QuestionMark>?</QuestionMark>
