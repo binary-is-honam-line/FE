@@ -44,9 +44,9 @@ const List = () => {
       <BackgroundImageRight />
       <AppWrapper>
         <Header>
-          <Title>내가 담은 장소</Title>
+          <Title>내가 담은 스테이지</Title>
         </Header>
-        <DistributeButton onClick={() => setStoryModalOpen(true)}>스토리 배포하기</DistributeButton>
+        <DistributeButton onClick={() => setStoryModalOpen(true)}>퀘스트 배포하기</DistributeButton>
         <PlaceList>
           {places.map((place, index) => (
             <PlaceBox
@@ -64,11 +64,11 @@ const List = () => {
       <BottomBar>
         <BottomButton onClick={() => navigate('/search')}>
           <ButtonImage src={`${process.env.PUBLIC_URL}/search.png`} alt="Search" />
-          <ButtonLabel>장소 검색</ButtonLabel>
+          <ButtonLabel>스테이지 검색</ButtonLabel>
         </BottomButton>
         <BottomButton onClick={() => navigate('/list')}>
           <ButtonImage src={`${process.env.PUBLIC_URL}/list.png`} alt="List" />
-          <ButtonLabel>장소 목록</ButtonLabel>
+          <ButtonLabel>스테이지 목록</ButtonLabel>
         </BottomButton>
         <BottomButton onClick={() => navigate('/ai')}>
           <ButtonImage src={`${process.env.PUBLIC_URL}/ai.png`} alt="AI Story" />

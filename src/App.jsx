@@ -16,7 +16,6 @@ import Mypage from './Pages/Mypage';
 import Edit from './Pages/Edit';
 import PasswordReset from './Pages/PasswordReset';
 
-
 const App = () => {
   const [places, setPlaces] = useState([]);
 
@@ -36,14 +35,15 @@ const App = () => {
         {/* Private Routes */}
         <Route path="/select" element={<PrivateRoute element={<SelectMode />} />} />
         <Route path="/creator" element={<PrivateRoute element={<CreatorMode />} />} />
-        <Route path="/search" element={<PrivateRoute element={<Search addPlace={addPlace} />} />} />
-        <Route path="/list" element={<PrivateRoute element={<List places={places} />} />} />
+        
+        {/* 수정된 부분: questId를 파라미터로 받는 라우트 추가 */}
+        <Route path="/search/:questId" element={<PrivateRoute element={<Search addPlace={addPlace} />} />} />
 
+        <Route path="/list" element={<PrivateRoute element={<List places={places} />} />} />
         <Route path="/player" element={<PrivateRoute element={<PlayerMode />} />} />
         <Route path="/mypage" element={<PrivateRoute element={<Mypage />} />} />
         <Route path="/edit" element={<PrivateRoute element={<Edit />} />} />
         <Route path="/password-reset" element={<PrivateRoute element={<PasswordReset />} />} />
-
       </Routes>
     </Router>
   );

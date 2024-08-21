@@ -1,9 +1,131 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
+import api from './Api'; // Api.jsx를 사용하기 위한 import
 
-const CreatorMode = ({ stories = [] }) => {
+const CreatorMode = () => {
   const navigate = useNavigate();
+  const [stories, setStories] = useState([]);
+  const [selectedStory, setSelectedStory] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [questName, setQuestName] = useState('');
+  const [location, setLocation] = useState('');
+  const [mainStory, setMainStory] = useState('');
+  const [imagePreview, setImagePreview] = useState('');
+  const [selectedImage, setSelectedImage] = useState(null);
+
+  useEffect(() => {
+    // 전체 퀘스트 목록을 불러오는 API 호출
+    api.get('/api/quests/')
+      .then(response => {
+        const quests = response.data;
+        const fetchImages = quests.map(quest =>
+          api.get(`/api/quests/${quest.questId}/image`, { responseType: 'blob' })
+            .then(imageResponse => {
+              quest.image = URL.createObjectURL(imageResponse.data);
+              return quest;
+            })
+        );
+
+        Promise.all(fetchImages).then(updatedQuests => {
+          setStories(updatedQuests);
+        });
+      })
+      .catch(error => {
+        console.error("퀘스트 목록을 불러오는데 실패했습니다.", error);
+      });
+  }, []);
+
+  const handleAddStory = () => {
+    // 퀘스트 생성 API 호출
+    api.post('/api/quests/create')
+    .then(() => {
+      // 퀘스트 생성 후 전체 퀘스트 목록을 다시 조회하여 가장 최근의 퀘스트를 찾습니다.
+      return api.get('/api/quests/');
+    })
+    .then(response => {
+      const quests = response.data;
+      if (quests.length > 0) {
+        const latestQuest = quests[quests.length - 1];
+        navigate(`/search/${latestQuest.questId}`);
+      } else {
+        console.error("생성된 퀘스트가 없습니다.");
+      }
+    })
+    .catch(error => {
+      console.error("퀘스트를 생성하거나 조회하는데 실패했습니다.", error);
+    });
+  };
+
+  const handleEditStory = (questId) => {
+    // 퀘스트 상세 정보 및 이미지 불러오기
+    api.get(`/api/quests/${questId}`)
+      .then(response => {
+        const { questName, location, mainStory } = response.data;
+        setQuestName(questName);
+        setLocation(location);
+        setMainStory(mainStory);
+
+        return api.get(`/api/quests/${questId}/image`, { responseType: 'blob' });
+      })
+      .then(imageResponse => {
+        setImagePreview(URL.createObjectURL(imageResponse.data));
+        setSelectedStory(questId);
+        setShowModal(true);
+      })
+      .catch(error => {
+        console.error("퀘스트 정보를 불러오는데 실패했습니다.", error);
+      });
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    setSelectedImage(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
+
+  const handleSaveChanges = () => {
+    // 퀘스트 이름, 위치, 메인스토리 수정 API 호출
+    api.post(`/api/quests/${selectedStory}/save`, null, {
+      params: {
+        questName,
+        location,
+        mainStory,
+      }
+    })
+      .then(() => {
+        // 이미지가 선택된 경우 이미지 수정 API 호출
+        if (selectedImage) {
+          const formData = new FormData();
+          formData.append('file', selectedImage);
+
+          return api.post(`/api/quests/${selectedStory}/image`, formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data'
+            }
+          });
+        }
+      })
+      .then(() => {
+        // 수정 완료 후 모달 닫기 및 퀘스트 목록 갱신
+        setShowModal(false);
+        window.location.reload();
+      })
+      .catch(error => {
+        console.error("퀘스트를 수정하는데 실패했습니다.", error);
+      });
+  };
+
+  const handleDeleteStory = (questId) => {
+    // 퀘스트 삭제 API 호출
+    api.delete(`/api/quests/${questId}`)
+      .then(() => {
+        setStories(prevStories => prevStories.filter(story => story.questId !== questId));
+      })
+      .catch(error => {
+        console.error("퀘스트를 삭제하는데 실패했습니다.", error);
+      });
+  };
 
   return (
     <Container>
@@ -13,29 +135,74 @@ const CreatorMode = ({ stories = [] }) => {
         <Header>
           <BackButton onClick={() => navigate('/select')}>뒤로 가기</BackButton>
         </Header>
-        <Title>내가 만든 스토리</Title>
-        <AddStoryButton onClick={() => navigate('/search')}>스토리 추가하기</AddStoryButton>
+        <Title>내가 만든 퀘스트</Title>
+        <AddStoryButton onClick={handleAddStory}>퀘스트 추가하기</AddStoryButton>
         <StoryList>
           {stories.length > 0 ? (
             stories.map((story, index) => (
               <StoryBox key={index}>
-                <StoryInfo>
-                  <StoryTitle>이름: {story.name}</StoryTitle>
-                  <StoryLocation>위치: {story.location}</StoryLocation>
-                  <StoryAuthor>작성자: {story.author}</StoryAuthor>
-                </StoryInfo>
-                <StoryImage src={story.image || "https://via.placeholder.com/100"} alt="대표사진" />
+                <StoryContent>
+                  <StoryInfo>
+                    <StoryTitle>{story.questName}</StoryTitle>
+                    <StoryLocation>
+                      <StoryImageIcon src="/location.png" alt="위치 이미지" />
+                      {story.location}
+                    </StoryLocation>
+                    <StoryAuthor>
+                      <StoryImageIcon src="/user.png" alt="사용자 이미지" />
+                      {story.userName}
+                    </StoryAuthor>
+                  </StoryInfo>
+                  <StoryImage src={story.image || "https://via.placeholder.com/100"} alt="대표사진" />
+                </StoryContent>
                 <StoryButtons>
-                  <StoryButton onClick={() => navigate('/list')}>수정하기</StoryButton>
-                  <StoryButton>삭제하기</StoryButton>
+                  <StoryButton onClick={() => handleEditStory(story.questId)}>수정하기</StoryButton>
+                  <StoryButton onClick={() => handleDeleteStory(story.questId)}>삭제하기</StoryButton>
                 </StoryButtons>
               </StoryBox>
             ))
           ) : (
-            <NoStoryMessage>아직 생성된 스토리가 없습니다.</NoStoryMessage>
+            <NoStoryMessage>아직 생성된 퀘스트가 없습니다.</NoStoryMessage>
           )}
         </StoryList>
       </AppWrapper>
+
+      {showModal && (
+        <ModalOverlay>
+          <ModalContent>
+            <ModalTitle>퀘스트 수정하기</ModalTitle>
+            <ModalLabel>이름</ModalLabel>
+            <ModalInput
+              type="text"
+              value={questName}
+              onChange={(e) => setQuestName(e.target.value)}
+            />
+            <ModalLabel>위치</ModalLabel>
+            <ModalInput
+              type="text"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+            />
+            <ModalLabel>메인스토리</ModalLabel>
+            <ModalInput
+              type="text"
+              value={mainStory}
+              onChange={(e) => setMainStory(e.target.value)}
+            />
+            <ModalLabel>대표 사진</ModalLabel>
+            <ModalImagePreview src={imagePreview} alt="대표 사진" />
+            <ModalInput
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+            />
+            <ModalButtons>
+              <ModalButton onClick={() => setShowModal(false)}>취소</ModalButton>
+              <ModalButton onClick={handleSaveChanges}>수정</ModalButton>
+            </ModalButtons>
+          </ModalContent>
+        </ModalOverlay>
+      )}
     </Container>
   );
 };
@@ -132,7 +299,7 @@ const AddStoryButton = styled.button`
 const StoryList = styled.div`
   flex-grow: 1;
   overflow-y: auto;
-  width: 100%;
+  width: 90%;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -140,54 +307,77 @@ const StoryList = styled.div`
 
 const StoryBox = styled.div`
   display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border: 2px solid #DEDEDE;
+  border-radius: 10px;
+  background-color: white;
+  padding: 15px;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+`;
+
+const StoryContent = styled.div`
+  display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  background-color: #FFFFFF;
 `;
 
 const StoryInfo = styled.div`
-  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+`;
+
+const StoryImageIcon = styled.img`
+  width: 16px;
+  height: 16px;
+  margin-right: 5px;
 `;
 
 const StoryTitle = styled.h2`
   font-size: 18px;
+  margin-bottom: 5px;
 `;
 
 const StoryLocation = styled.p`
-  margin: 5px 0;
+  font-size: 14px;
+  color: #666;
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px;
 `;
 
 const StoryAuthor = styled.p`
-  margin: 5px 0;
+  font-size: 14px;
+  color: #666;
+  display: flex;
+  align-items: center;
 `;
 
 const StoryImage = styled.img`
-  width: 100px;
-  height: 100px;
+  width: 120px;
+  height: auto;
   object-fit: cover;
-  border-radius: 5px;
+  border-radius: 10px;
   margin-left: 20px;
 `;
 
 const StoryButtons = styled.div`
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  justify-content: space-between;
+  margin-top: 10px;
 `;
 
 const StoryButton = styled.button`
-  padding: 5px 10px;
-  background-color: #007bff;
-  color: white;
+  padding: 10px 20px;
+  background-color: #BEDC74;
+  color: black;
   border: none;
   border-radius: 5px;
   cursor: pointer;
+  width: 48%;
 
   &:hover {
-    background-color: #0056b3;
+    background-color: #A2CA71;
   }
 `;
 
@@ -195,6 +385,75 @@ const NoStoryMessage = styled.div`
   text-align: center;
   color: #aaa;
   font-size: 16px;
+`;
+
+const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+`;
+
+const ModalContent = styled.div`
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  width: 25%;
+  box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.2);
+`;
+
+const ModalTitle = styled.h2`
+  margin-bottom: 15px;
+  text-align: center;
+`;
+
+const ModalLabel = styled.label`
+  margin-bottom: 5px;
+  display: block;
+  font-weight: bold;
+`;
+
+const ModalInput = styled.input`
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-sizing: border-box;
+`;
+
+const ModalImagePreview = styled.img`
+  width: 100%;
+  max-width: 100px;
+  height: auto;
+  margin-bottom: 10px;
+  border-radius: 5px;
+`;
+
+const ModalButtons = styled.div`
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+`;
+
+const ModalButton = styled.button`
+  padding: 10px 20px;
+  background-color: #BEDC74;
+  color: black;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  width: 48%;
+
+  &:hover {
+    background-color: #A2CA71;
+  }
 `;
 
 export default CreatorMode;
