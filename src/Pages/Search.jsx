@@ -1,7 +1,8 @@
 /*global kakao*/
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import api from './Api';
 
 const Search = () => {
   const [map, setMap] = useState(null);
@@ -10,8 +11,8 @@ const Search = () => {
   const [registeredPlaces, setRegisteredPlaces] = useState([]);
   const [selectedPlace, setSelectedPlace] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [routes, setRoutes] = useState([]);
 
+  const { questId } = useParams();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -29,18 +30,87 @@ const Search = () => {
 
         const container = document.getElementById("Mymap");
         const options = {
-          center: new kakao.maps.LatLng(35.1595454, 126.8526012), // 광주광역시청으로 기본 위치 설정
+          center: new kakao.maps.LatLng(35.1595454, 126.8526012), 
           level: 3,
         };
         const mapInstance = new kakao.maps.Map(container, options);
         setMap(mapInstance);
+
+        if (questId) {
+          loadStages(questId, mapInstance);
+        }
       });
     };
 
     script.onerror = () => {
       console.error("Kakao Maps 스크립트를 로드하지 못했습니다.");
     };
-  }, []);
+  }, [questId]);
+
+  const loadStages = (questId, mapInstance) => {
+    api.get(`/api/stages/${questId}`)
+      .then(response => {
+        const stages = response.data;
+        setRegisteredPlaces(stages);
+
+        const fetchPoints = stages.map(stage =>
+          api.get(`/api/stages/${questId}/points`)
+            .then(response => response.data)
+        );
+
+        return Promise.all(fetchPoints);
+      })
+      .then(points => {
+        displayStagesOnMap(points.flat(), mapInstance);
+      })
+      .catch(error => {
+        console.error("스테이지를 불러오는데 실패했습니다.", error);
+      });
+  };
+
+  const displayStagesOnMap = (points, mapInstance) => {
+    const bounds = new kakao.maps.LatLngBounds();
+    const newMarkers = [];
+    const linePath = [];
+
+    points.forEach((point) => {
+        if (isNaN(point.lat) || isNaN(point.lng)) {
+            console.warn("Invalid coordinates:", point);
+            return;
+        }
+
+        const position = new kakao.maps.LatLng(point.lat, point.lng);
+        const imageSrc = `${process.env.PUBLIC_URL}/monkey${point.sequenceNumber}.png`;
+        const imageSize = new kakao.maps.Size(50, 50);
+        const imageOption = { offset: new kakao.maps.Point(15, 15) };
+        const markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize, imageOption);
+
+        const marker = new kakao.maps.Marker({
+            position,
+            map: mapInstance,
+            image: markerImage,
+        });
+
+        linePath.push(position);
+        bounds.extend(position);
+        newMarkers.push(marker);
+    });
+
+    if (linePath.length > 0) {
+        setMarkers(newMarkers);
+        mapInstance.setBounds(bounds);
+
+        const polyline = new kakao.maps.Polyline({
+            path: linePath,
+            strokeWeight: 5,
+            strokeColor: "#FF0000",
+            strokeOpacity: 0.7,
+            strokeStyle: "solid",
+        });
+        polyline.setMap(mapInstance);
+    }
+};
+
 
   const searchPlaces = () => {
     if (!keyword.trim()) {
@@ -74,7 +144,7 @@ const Search = () => {
     places.forEach((place) => {
       const position = new kakao.maps.LatLng(place.y, place.x);
       const registeredPlace = registeredPlaces.find(
-        (registered) => registered.place_name === place.place_name
+        (registered) => registered.stageName === place.place_name
       );
       const marker = createMarker(position, place, registeredPlace);
       bounds.extend(position);
@@ -86,33 +156,32 @@ const Search = () => {
   };
 
   const createMarker = (position, place, registeredPlace) => {
-    let imageSrc = `${process.env.PUBLIC_URL}/monkeys.png`; // 기본 마커 이미지의 주소
+    let imageSrc = `${process.env.PUBLIC_URL}/monkeys.png`;
 
     if (registeredPlace) {
       const index = registeredPlaces.indexOf(registeredPlace) + 1;
-      imageSrc = `${process.env.PUBLIC_URL}/monkey${index}.png`; // 등록된 마커 이미지의 주소
+      imageSrc = `${process.env.PUBLIC_URL}/monkey${index}.png`;
     }
 
-    const imageSize = new kakao.maps.Size(50, 50); // 마커 이미지의 크기
-    const imageOption = { offset: new kakao.maps.Point(15, 15) }; // 마커 이미지의 좌표에 일치시킬 좌표 (이미지의 중앙)
+    const imageSize = new kakao.maps.Size(50, 50);
+    const imageOption = { offset: new kakao.maps.Point(15, 15) };
     
-    const markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize, imageOption); // 마커 이미지를 생성
+    const markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize, imageOption);
   
     const marker = new kakao.maps.Marker({
       position,
       map: map,
-      image: markerImage, // 생성한 마커 이미지를 설정
+      image: markerImage,
     });
   
     kakao.maps.event.addListener(marker, "click", () => {
-      console.log("Marker clicked:", place); // 마커 클릭 시 콘솔에 출력
       setSelectedPlace(place);
       setIsModalOpen(true);
     });
   
     return marker;
   };
-  
+
   const removeTempMarkers = () => {
     markers.forEach((marker) => marker.setMap(null));
     setMarkers([]);
@@ -125,46 +194,26 @@ const Search = () => {
   const handleRegister = () => {
     if (!selectedPlace) return;
 
-    // 새로운 마커를 지도에 추가 (이전 마커들은 유지)
-    setRoutes((prevRoutes) => {
-      const newRoutes = [...prevRoutes, selectedPlace];
-      
-      const linePath = newRoutes.map(
-        (route) => new kakao.maps.LatLng(route.y, route.x)
-      );
-      
-      const markerIndex = newRoutes.length;
-      const imageSrc = `${process.env.PUBLIC_URL}/monkey${markerIndex}.png`; // 각 마커 인덱스에 해당하는 이미지 파일 경로
-      const imageSize = new kakao.maps.Size(50, 50); // 마커 이미지의 크기
-      const imageOption = { offset: new kakao.maps.Point(15, 15) }; // 마커 이미지의 좌표에 일치시킬 좌표 (이미지의 중앙)
-      const markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize, imageOption);
-      
-      const marker = new kakao.maps.Marker({
-        map: map,
-        position: new kakao.maps.LatLng(selectedPlace.y, selectedPlace.x),
-        image: markerImage,
+    const stageData = {
+      stageName: selectedPlace.place_name,
+      stageAddress: selectedPlace.address_name || selectedPlace.road_address_name,
+      lat: selectedPlace.y,
+      lng: selectedPlace.x,
+      stageDes: "등록된 스테이지입니다."
+    };
+
+    // 스테이지 추가 API 호출
+    api.post(`/api/stages/${questId}/create`, null, {
+      params: stageData,
+    })
+      .then(() => {
+        alert("스테이지가 성공적으로 등록되었습니다.");
+        window.location.reload();
+      })
+      .catch(error => {
+        console.error("스테이지 등록에 실패했습니다.", error);
+        alert("스테이지 등록에 실패했습니다.");
       });
-
-      // 새로 추가된 마커를 포함해 모든 마커들을 저장
-      setMarkers(prevMarkers => [...prevMarkers, marker]);
-
-      // 등록된 장소를 저장
-      setRegisteredPlaces(prevPlaces => [...prevPlaces, selectedPlace]);
-
-      // 경로를 직선으로 연결
-      const polyline = new kakao.maps.Polyline({
-        path: linePath,
-        strokeWeight: 5,
-        strokeColor: "#FF0000",
-        strokeOpacity: 0.7,
-        strokeStyle: "solid",
-      });
-      polyline.setMap(map);
-
-      return newRoutes;
-    });
-
-    closeModal();
   };
 
   return (
@@ -175,7 +224,7 @@ const Search = () => {
         <SearchBarWrapper>
           <SearchInput
             type="text"
-            placeholder="장소 키워드 검색"
+            placeholder="스테이지 키워드 검색"
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
           />
@@ -189,19 +238,19 @@ const Search = () => {
         <MapContents id="Mymap"></MapContents>
 
         <BottomBar>
-          <BottomButton onClick={() => navigate('/search')}>
+          <BottomButton onClick={() => navigate(`/search/${questId}`)}>
             <ButtonImage
               src={`${process.env.PUBLIC_URL}/search.png`}
               alt="Search"
             />
-            <ButtonLabel>장소 검색</ButtonLabel>
+            <ButtonLabel>스테이지 검색</ButtonLabel>
           </BottomButton>
-          <BottomButton onClick={() => navigate('/list')}>
+          <BottomButton onClick={() => navigate(`/list/${questId}`)}>
             <ButtonImage
               src={`${process.env.PUBLIC_URL}/list.png`}
               alt="List"
             />
-            <ButtonLabel>장소 목록</ButtonLabel>
+            <ButtonLabel>스테이지 목록</ButtonLabel>
           </BottomButton>
           <BottomButton onClick={() => navigate('/ai')}>
             <ButtonImage src={`${process.env.PUBLIC_URL}/ai.png`} alt="AI Story" />
@@ -314,7 +363,6 @@ const SearchIcon = styled.img`
   height: 24px;
   filter: brightness(0) invert(1);
 `;
-
 
 const MapContents = styled.div`
   width: 100%;
