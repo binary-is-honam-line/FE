@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
+import api from './Api';
 
 const logoImage = `${process.env.PUBLIC_URL}/monkeys.png`;
 
@@ -109,8 +110,8 @@ const ModalText = styled.p`
 `;
 
 const ModalButton = styled.button`
-    background-color: #FFD8E1;
-    color: black;
+    background-color: #387F39;
+    color: white;
     border: none;
     padding: 10px 20px;
     border-radius: 50px;
@@ -119,7 +120,7 @@ const ModalButton = styled.button`
     margin-top: 20px;
 
     &:hover {
-        color: #FF86FF;
+        color: black;
     }
 `;
 
@@ -137,13 +138,25 @@ const FindId = () => {
     const [foundId, setFoundId] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
 
+    useEffect(() => {
+        // 페이지 로드 시 세션을 확인하여 이미 로그인된 상태라면 선택 모드로 리다이렉트
+        const user = sessionStorage.getItem('user');
+        if (user) {
+            navigate('/select');
+        }
+    }, [navigate]);
+
     const handleFindIdClick = async () => {
         try {
-            // API 호출 예시
-            const response = await fetch(`https://api.example.com/find-id?name=${userName}&phone=${phoneNumber}`);
-            const data = await response.json();
-            if (data.success) {
-                setFoundId(data.id); // API에서 가져온 아이디 설정
+            const response = await api.get('/api/user/find-email', {
+                params: {
+                    name: userName,
+                    phone: phoneNumber,
+                },
+            });
+            const data = response.data;
+            if (response.status === 200 && data.email) {
+                setFoundId(data.email); // API에서 가져온 이메일 설정
                 setModalOpen(true); // 모달 열기
             } else {
                 setErrorMessage('아이디를 찾을 수 없습니다.');

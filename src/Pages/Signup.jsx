@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import api from './Api';
@@ -175,6 +175,14 @@ const Signup = () => {
     const [passwordChk, setPasswordChk] = useState('');
     const [nickname, setNickname] = useState('');
     const [error, setError] = useState('');
+
+    useEffect(() => {
+        // 페이지 로드 시 세션을 확인하여 이미 로그인된 상태라면 선택모드로 리다이렉트
+        const user = sessionStorage.getItem('user');
+        if (user) {
+            navigate('/select');
+        }
+    }, [navigate]);
 
     const handleSignupClick = async () => {
         if (!name || !email || !phone || !password || !passwordChk || !nickname) {

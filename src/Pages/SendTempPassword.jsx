@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
+import api from './Api';
 
 const logoImage = `${process.env.PUBLIC_URL}/monkeys.png`;
 
@@ -17,7 +18,7 @@ const BackgroundImageLeft = styled.div`
     position: absolute;
     top: 0;
     left: 0;
-    width: calc(50% - 187.5px); /* 50%에서 AppWrapper의 절반을 뺀 값 */
+    width: calc(50% - 187.5px);
     height: 100%;
     background-image: url('/left.png');
     background-repeat: no-repeat;
@@ -29,7 +30,7 @@ const BackgroundImageRight = styled.div`
     position: absolute;
     top: 0;
     right: 0;
-    width: calc(50% - 187.5px); /* 50%에서 AppWrapper의 절반을 뺀 값 */
+    width: calc(50% - 187.5px);
     height: 100%;
     background-image: url('/right.png');
     background-repeat: no-repeat;
@@ -109,8 +110,8 @@ const ModalText = styled.p`
 `;
 
 const ModalButton = styled.button`
-    background-color: #FFD8E1;
-    color: black;
+    background-color: #387F39;
+    color: white;
     border: none;
     padding: 10px 20px;
     border-radius: 50px;
@@ -119,34 +120,57 @@ const ModalButton = styled.button`
     margin-top: 20px;
 
     &:hover {
-        color: #FF86FF;
+        color: black;
     }
 `;
 
 const SendTempPassword = () => {
     const navigate = useNavigate();
     const [modalOpen, setModalOpen] = useState(false);
+    const [name, setName] = useState('');
     const [email, setEmail] = useState('');
-    const [tempPasswordSent, setTempPasswordSent] = useState(false);
+    const [phone, setPhone] = useState('');
+    const [tempPassword, setTempPassword] = useState('');
+    const [errorMessage, setErrorMessage] = useState('');
+
+    useEffect(() => {
+        // 페이지 로드 시 세션을 확인하여 이미 로그인된 상태라면 선택모드로 리다이렉트
+        const user = sessionStorage.getItem('user');
+        if (user) {
+            navigate('/select');
+        }
+    }, [navigate]);
 
     const handleSendTempPasswordClick = async () => {
         try {
-            // 실제로는 API 호출
-            console.log(`Sending temporary password to ${email}...`);
+            // API 호출
+            const response = await api.post('/api/user/temp-password', null, {
+                params: {
+                    name: name,
+                    email: email,
+                    phone: phone,
+                },
+            });
 
-            // API 호출이 성공했다고 가정하고, 모달 열기 및 상태 업데이트
-            setTempPasswordSent(true);
-            setModalOpen(true);
+            const { data } = response;
+            if (response.status === 200 && data) {
+                setTempPassword(data);
+                setModalOpen(true); // 모달 열기
+            } else {
+                setErrorMessage('임시 비밀번호를 생성하는데 실패했습니다.');
+            }
         } catch (error) {
-            // API 호출 실패 처리
-            console.error('Failed to send temporary password:', error);
+            console.error('임시 비밀번호 생성 실패:', error);
+            setErrorMessage('임시 비밀번호 생성에 실패했습니다.');
         }
     };
 
     const closeModal = () => {
         setModalOpen(false);
-        setTempPasswordSent(false);
+        setTempPassword('');
+        setName('');
         setEmail('');
+        setPhone('');
     };
 
     const handleLoginButtonClick = () => {
@@ -162,23 +186,35 @@ const SendTempPassword = () => {
             <AppWrapper>
                 <Logo src={logoImage} alt="Logo" />
                 <Input
+                    type="text"
+                    placeholder="이름"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                />
+                <Input
                     type="email"
                     placeholder="이메일"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                />
+                <Input
+                    type="text"
+                    placeholder="전화번호"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
                 />
                 <SendTempPasswordButton onClick={handleSendTempPasswordClick}>임시 비밀번호 전송</SendTempPasswordButton>
 
                 {modalOpen && (
                     <ModalBackdrop>
                         <ModalContent>
-                            {tempPasswordSent ? (
+                            {tempPassword ? (
                                 <>
-                                    <ModalText>임시 비밀번호가 전송되었습니다.</ModalText>
+                                    <ModalText>{`${tempPassword}`}</ModalText>
                                     <ModalButton onClick={handleLoginButtonClick}>로그인하기</ModalButton>
                                 </>
                             ) : (
-                                <ModalText>임시 비밀번호 전송에 실패했습니다.</ModalText>
+                                <ModalText>임시 비밀번호 생성에 실패했습니다.</ModalText>
                             )}
                         </ModalContent>
                     </ModalBackdrop>
