@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import api from './Api';
-import LocationSelector from './LocationSelector'; // LocationSelector 컴포넌트를 불러옵니다.
+import LocationSelector from './LocationSelector';
 
 const PAGE_SIZE = 5; // 페이지당 퀘스트 수
 
@@ -17,19 +17,26 @@ const CreatorMode = () => {
   const [mainStory, setMainStory] = useState('');
   const [imagePreview, setImagePreview] = useState('');
   const [selectedImage, setSelectedImage] = useState(null);
+  const [headCount, setHeadCount] = useState(''); // 적정 인원 수 상태
+  const [time, setTime] = useState(''); // 예상 시간 상태
 
   useEffect(() => {
     api.get('/api/quests/')
       .then(response => {
         const quests = response.data;
-        const fetchImages = quests.map(quest =>
-          api.get(`/api/quests/${quest.questId}/image`, { responseType: 'blob' })
+        const fetchDetails = quests.map(quest =>
+          api.get(`/api/quests/${quest.questId}/update`)
+            .then(detailResponse => {
+              quest.headCount = detailResponse.data.headCount;
+              quest.time = detailResponse.data.time;
+              return api.get(`/api/quests/${quest.questId}/image`, { responseType: 'blob' });
+            })
             .then(imageResponse => {
               quest.image = URL.createObjectURL(imageResponse.data);
               return quest;
             })
         );
-        Promise.all(fetchImages).then(updatedQuests => {
+        Promise.all(fetchDetails).then(updatedQuests => {
           setStories(updatedQuests);
         });
       })
@@ -37,6 +44,7 @@ const CreatorMode = () => {
         console.error("퀘스트 목록을 불러오는데 실패했습니다.", error);
       });
   }, []);
+  
 
   const handleAddStory = () => {
     api.post('/api/quests/create')
@@ -56,12 +64,15 @@ const CreatorMode = () => {
   };
 
   const handleEditStory = (questId) => {
-    api.get(`/api/quests/${questId}`)
+    api.get(`/api/quests/${questId}/update`)
       .then(response => {
-        const { questName, location, mainStory } = response.data;
+        console.log("API Response:", response.data); // 응답 데이터를 출력
+        const { questName, location, mainStory, headCount, time } = response.data;
         setQuestName(questName);
         setLocation(location);
         setMainStory(mainStory);
+        setHeadCount(headCount);  // 적정 인원 수 설정
+        setTime(time);  // 예상 시간 설정
         return api.get(`/api/quests/${questId}/image`, { responseType: 'blob' });
       })
       .then(imageResponse => {
@@ -73,6 +84,7 @@ const CreatorMode = () => {
         console.error("퀘스트 정보를 불러오는데 실패했습니다.", error);
       });
   };
+  
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -86,6 +98,8 @@ const CreatorMode = () => {
         questName,
         location,
         mainStory,
+        headCount,  // 적정 인원 수 저장
+        time  // 예상 시간 저장
       }
     })
       .then(() => {
@@ -149,7 +163,14 @@ const CreatorMode = () => {
                       <StoryImageIcon src="/user.png" alt="사용자 이미지" />
                       {story.userNickname}
                     </StoryAuthor>
-                    <StoryMain>{story.mainStory}</StoryMain>
+                    <StoryCount>
+                      <StoryImageIcon src="/count.png" alt="적정인원수 이미지" />
+                      {story.headCount}
+                    </StoryCount>
+                    <StoryTime>
+                      <StoryImageIcon src="/time.png" alt="예상시간 이미지" />
+                      {story.time}
+                    </StoryTime>
                   </StoryInfo>
                   <StoryImage src={story.image || "https://via.placeholder.com/100"} alt="대표사진" />
                 </StoryContent>
@@ -197,6 +218,20 @@ const CreatorMode = () => {
             <ModalTextarea
               value={mainStory}
               onChange={(e) => setMainStory(e.target.value)}
+            />
+            <ModalLabel>추천 인원 수</ModalLabel>
+            <ModalInput
+              type="number"
+              placeholder="5"
+              value={headCount}
+              onChange={(e) => setHeadCount(e.target.value)}
+            />
+            <ModalLabel>예상 시간</ModalLabel>
+            <ModalInput
+              type="text"
+              placeholder="예: 03:00:00 (시간:분:초)"
+              value={time}
+              onChange={(e) => setTime(e.target.value)}
             />
             <ModalLabel>대표 사진</ModalLabel>
             <ModalImagePreview src={imagePreview} alt="대표 사진" />
@@ -339,12 +374,12 @@ const StoryInfo = styled.div`
 const StoryImageIcon = styled.img`
   width: 16px;
   height: 16px;
-  margin-right: 5px;
+  margin-right: 2px;
 `;
 
 const StoryTitle = styled.h2`
   font-size: 18px;
-  margin-bottom: 5px;
+  margin-bottom: 1px;
 `;
 
 const StoryLocation = styled.p`
@@ -352,16 +387,27 @@ const StoryLocation = styled.p`
   color: #666;
   display: flex;
   align-items: center;
-  margin-bottom: 5px;
+  margin-bottom: 1px;
 `;
 
-const StoryMain = styled.p`
-  font-size: 14px;
-  color: #333;
-  white-space: pre-wrap; /* 자동 줄바꿈 */
-`;
 
 const StoryAuthor = styled.p`
+  font-size: 14px;
+  color: #666;
+  display: flex;
+  align-items: center;
+  margin-bottom: 1px;
+`;
+
+const StoryCount = styled.p`
+  font-size: 14px;
+  color: #666;
+  display: flex;
+  align-items: center;
+  margin-bottom: 1px;
+`;
+
+const StoryTime = styled.p`
   font-size: 14px;
   color: #666;
   display: flex;

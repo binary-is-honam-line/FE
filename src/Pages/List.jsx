@@ -2,20 +2,22 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from './Api';
-import LocationSelector from './LocationSelector'; // LocationSelector를 가져옵니다.
+import LocationSelector from './LocationSelector';
 
 const List = () => {
   const navigate = useNavigate();
   const { questId } = useParams();
   const [places, setPlaces] = useState([]);
   const [isStoryModalOpen, setStoryModalOpen] = useState(false);
-  const [selectedQuest, setSelectedQuest] = useState(null); // 선택된 퀘스트의 정보
+  const [selectedQuest, setSelectedQuest] = useState(null);
   const [questName, setQuestName] = useState('');
   const [location, setLocation] = useState('');
   const [mainStory, setMainStory] = useState('');
   const [imagePreview, setImagePreview] = useState('');
   const [selectedImage, setSelectedImage] = useState(null);
-  const [isDistributing, setIsDistributing] = useState(false); // 배포 중 상태 추가
+  const [isDistributing, setIsDistributing] = useState(false);
+  const [headCount, setHeadCount] = useState('');
+  const [time, setTime] = useState('');
 
   useEffect(() => {
     if (questId) {
@@ -48,18 +50,17 @@ const List = () => {
   };
 
   const handleOpenModal = () => {
-    // 퀘스트 상세 정보 불러오기
-    api.get(`/api/quests/${questId}`)
+    // 퀘스트 수정 정보를 불러오기
+    api.get(`/api/quests/${questId}/update`)
       .then(response => {
-        const { questName, location, mainStory } = response.data;
+        const { questName, location, mainStory, image, headCount, time } = response.data;
         setQuestName(questName);
         setLocation(location);
         setMainStory(mainStory);
+        setHeadCount(headCount.toString()); // headCount를 문자열로 변환하여 상태에 설정
+        setTime(time);
 
-        return api.get(`/api/quests/${questId}/image`, { responseType: 'blob' });
-      })
-      .then(imageResponse => {
-        setImagePreview(URL.createObjectURL(imageResponse.data));
+        setImagePreview(`${process.env.PUBLIC_URL}/${image}`); // 서버로부터 이미지 URL을 가져옴
         setSelectedQuest(questId);
         setStoryModalOpen(true);
       })
@@ -75,12 +76,14 @@ const List = () => {
   };
 
   const handleDistribute = () => {
-    setIsDistributing(true); // 배포 중 상태로 설정
+    setIsDistributing(true);
     api.post(`/api/quests/${selectedQuest}/save`, null, {
       params: {
         questName,
         location,
         mainStory,
+        headCount: headCount ? Number(headCount) : null, // headCount가 비어 있으면 null로 전달
+        time
       }
     })
       .then(() => {
@@ -154,53 +157,65 @@ const List = () => {
           <ButtonLabel>작가</ButtonLabel>
         </BottomButton>
         <BottomButton onClick={() => navigate('/select')}>
-            <ButtonImage src={`${process.env.PUBLIC_URL}/mode.png`} />
-            <ButtonLabel>모드선택</ButtonLabel>
+          <ButtonImage src={`${process.env.PUBLIC_URL}/mode.png`} />
+          <ButtonLabel>모드선택</ButtonLabel>
         </BottomButton>
       </BottomBar>
 
-      {/* 배포 모달 */}
       {isStoryModalOpen && (
         <ModalOverlay>
           <ModalContent>
             <ModalTitle>퀘스트 배포</ModalTitle>
             <ModalLabel>이름</ModalLabel>
             <ModalInput
-              type="text"
-              value={questName}
-              onChange={(e) => setQuestName(e.target.value)}
-            />
-            <ModalLabel>위치</ModalLabel>
-            {/* LocationSelector를 사용하여 위치를 선택하게 만듭니다. */}
-            <LocationSelector
-              selectedLocation={location}
-              setSelectedLocation={setLocation}
-            />
-            <ModalLabel>메인 스토리</ModalLabel>
-            <ModalTextarea
-              value={mainStory}
-              onChange={(e) => setMainStory(e.target.value)}
-              style={{minHeight: '100px'}}
-            />
-            <ModalLabel>대표 사진</ModalLabel>
-            <ModalImagePreview src={imagePreview} alt="대표 사진" />
-            <ModalInput
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
-            />
-            <ModalButtons>
-              <ModalButton onClick={() => setStoryModalOpen(false)}>취소</ModalButton>
-              <ModalButton onClick={handleDistribute} disabled={isDistributing}>
-                {isDistributing ? '배포 중...' : '배포'}
-              </ModalButton>
-            </ModalButtons>
-          </ModalContent>
-        </ModalOverlay>
-      )}
-    </Container>
+            type="text"
+            value={questName}
+            onChange={(e) => setQuestName(e.target.value)}
+          />
+          <ModalLabel>위치</ModalLabel>
+          <LocationSelector
+            selectedLocation={location}
+            setSelectedLocation={setLocation}
+          />
+          <ModalLabel>메인 스토리</ModalLabel>
+          <ModalTextarea
+            value={mainStory}
+            onChange={(e) => setMainStory(e.target.value)}
+            style={{minHeight: '100px'}}
+          />
+          <ModalLabel>추천 인원 수</ModalLabel>
+          <ModalInput
+            type="number"
+            placeholder="5"
+            value={headCount}
+            onChange={(e) => setHeadCount(e.target.value)}  // 숫자가 아닌 문자열로 다룹니다
+          />
+          <ModalLabel>예상 시간</ModalLabel>
+          <ModalInput
+            type="text"
+            placeholder="예: 03:00:00 (시간:분:초)"
+            value={time}
+            onChange={(e) => setTime(e.target.value)}
+          />
+          <ModalLabel>대표 사진</ModalLabel>
+          <ModalImagePreview src={imagePreview} alt="대표 사진" />
+          <ModalInput
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+          />
+          <ModalButtons>
+            <ModalButton onClick={() => setStoryModalOpen(false)}>취소</ModalButton>
+            <ModalButton onClick={handleDistribute} disabled={isDistributing}>
+              {isDistributing ? '배포 중...' : '배포'}
+            </ModalButton>
+          </ModalButtons>
+        </ModalContent>
+      </ModalOverlay>
+    )}
+  </Container>
   );
-};
+}
 
 const Container = styled.div`
   display: flex;
@@ -426,7 +441,7 @@ const ModalImagePreview = styled.img`
   margin-bottom: 10px;
   border-radius: 5px;
   display: block;
-  margin-left: 0; /* 왼쪽 정렬 */
+  margin-left: 0;
 `;
 
 const ModalButtons = styled.div`
