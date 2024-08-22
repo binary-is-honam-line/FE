@@ -98,6 +98,7 @@ const ModalContent = styled.div`
   width: 80%;
   max-width: 375px;
   text-align: center;
+  box-sizing: border-box;
 `;
 
 const Title = styled.h2`

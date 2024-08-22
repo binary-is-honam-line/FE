@@ -176,6 +176,7 @@ const List = () => {
             <ModalTextarea
               value={mainStory}
               onChange={(e) => setMainStory(e.target.value)}
+              style={{minHeight: '100px'}}
             />
             <ModalLabel>대표 사진</ModalLabel>
             <ModalImagePreview src={imagePreview} alt="대표 사진" />
@@ -381,6 +382,7 @@ const ModalContent = styled.div`
   text-align: center;
   width: 100%;
   max-width: 375px;
+  box-sizing: border-box;
 `;
 
 const ModalTitle = styled.h2`

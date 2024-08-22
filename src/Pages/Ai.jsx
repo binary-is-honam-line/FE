@@ -133,203 +133,202 @@ const Ai = () => {
   );
 };
 
-// 스타일 컴포넌트들
 const Container = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  height: 100vh;
-  width: 100%;
-  position: relative;
-  overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100vh;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
 `;
 
 const BackgroundImageLeft = styled.div`
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: calc(50% - 187.5px);
-  height: 100%;
-  background-image: url('/left.png');
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-position: left center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: calc(50% - 187.5px);
+    height: 100%;
+    background-image: url('/left.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: left center;
 `;
 
 const BackgroundImageRight = styled.div`
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: calc(50% - 187.5px);
-  height: 100%;
-  background-image: url('/right.png');
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-position: right center;
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: calc(50% - 187.5px);
+    height: 100%;
+    background-image: url('/right.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: right center;
 `;
 
 const AppWrapper = styled.div`
-  width: 100%;
-  max-width: 375px;
-  flex-grow: 1;
-  background-color: #FEFEFE;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  overflow-y: auto;
-  padding: 20px;
-  box-sizing: border-box;
-  margin-bottom: 80px;
+    width: 100%;
+    max-width: 375px;
+    flex-grow: 1;
+    background-color: #FEFEFE;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-y: auto;
+    padding: 20px;
+    box-sizing: border-box;
+    margin-bottom: 80px;
 `;
 
 const Title = styled.h1`
-  font-size: 20px;
-  text-align: center;
-  margin-bottom: 20px;
+    font-size: 20px;
+    text-align: center;
+    margin-bottom: 20px;
 `;
 
 const PromptInput = styled.textarea`
-  width: 90%;
-  padding: 15px;
-  font-size: 16px;
-  border: 1px solid #A2CA71;
-  border-radius: 5px;
-  margin-bottom: 20px;
-  background-color: white;
-  resize: none;
+    width: 90%;
+    padding: 15px;
+    font-size: 16px;
+    border: 1px solid #A2CA71;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    background-color: white;
+    resize: none;
 `;
 
 const GenerateButton = styled.button`
-  width: 100%;
-  padding: 15px;
-  background-color: #BEDC74;
-  color: black;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 16px;
+    width: 100%;
+    padding: 15px;
+    background-color: #BEDC74;
+    color: black;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
 
-  &:hover {
-    background-color: #88bb55;
-  }
+    &:hover {
+        background-color: #88bb55;
+    }
 `;
 
 const StorySection = styled.div`
-  width: 100%;
-  margin-bottom: 20px;
+    width: 100%;
+    margin-bottom: 20px;
 `;
 
 const SectionContainer = styled.div`
-  width: 100%;
-  margin-bottom: 20px;
+    width: 100%;
+    margin-bottom: 20px;
 `;
 
 const SectionTitle = styled.h2`
-  font-size: 18px;
-  margin-bottom: 5px;
-  color: black;
+    font-size: 18px;
+    margin-bottom: 5px;
+    color: black;
 `;
 
 const StoryText = styled.p`
-  font-size: 14px;
-  color: #333;
-  white-space: pre-wrap;
+    font-size: 14px;
+    color: #333;
+    white-space: pre-wrap;
 `;
 
 const StoryBox = styled.div`
-  padding: 10px;
-  background-color: #E6EFCE;
-  border-left: 5px solid #BEDC74;
-  border-radius: 5px;
-  margin-bottom: 10px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    background-color: #E6EFCE;
+    border-left: 5px solid #BEDC74;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 `;
 
 const StageTitle = styled.h3`
-  font-size: 16px;
-  font-weight: bold;
-  margin-bottom: 5px;
-  background-color: #BEDC74;
-  padding: 5px;
-  border-radius: 3px;
-  color: #333;
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 5px;
+    background-color: #BEDC74;
+    padding: 5px;
+    border-radius: 3px;
+    color: #333;
 `;
 
 const StageStory = styled.p`
-  font-size: 14px;
-  color: #333;
-  white-space: pre-wrap;
-  padding: 5px;
-  border-radius: 5px;
-  background-color: #FFF;
-  margin-top: 5px;
+    font-size: 14px;
+    color: #333;
+    white-space: pre-wrap;
+    padding: 5px;
+    border-radius: 5px;
+    background-color: #FFF;
+    margin-top: 5px;
 `;
 
 const Pagination = styled.div`
-  display: flex;
-  justify-content: center;
-  margin: 20px 0;
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
 `;
 
 const PageButton = styled.button`
-  padding: 8px 12px;
-  margin: 0 5px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background-color: ${({ disabled }) => (disabled ? '#ccc' : '#A2CA71')};
-  color: ${({ disabled }) => (disabled ? '#fff' : '#333')};
-  cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
+    padding: 8px 12px;
+    margin: 0 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: ${({ disabled }) => (disabled ? '#ccc' : '#A2CA71')};
+    color: ${({ disabled }) => (disabled ? '#fff' : '#333')};
+    cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
 
-  &:hover {
-    background-color: #A2CA71;
-    color: #fff;
-  }
+    &:hover {
+        background-color: #A2CA71;
+        color: #fff;
+    }
 `;
 
 const PageNumber = styled.span`
-  padding: 8px 12px;
-  font-size: 16px;
-  color: #333;
+    padding: 8px 12px;
+    font-size: 16px;
+    color: #333;
 `;
 
 const BottomBar = styled.div`
-  width: 100%;  
-  max-width: 375px;
-  height: 80px;
-  position: fixed;
-  bottom: 0;
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  background-color: #A2CA71;
-  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
-  z-index: 100;
+    width: 100%;  
+    max-width: 375px;
+    height: 80px;
+    position: fixed;
+    bottom: 0;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background-color: #A2CA71;
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+    z-index: 100;
 `;
 
 const BottomButton = styled.button`
-  background-color: transparent;
-  border: none;
-  font-size: 14px;
-  color: #333333;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  cursor: pointer;
+    background-color: transparent;
+    border: none;
+    font-size: 14px;
+    color: #333333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
 
-  &:hover {
-    color: #ff6f61;
-  }
+    &:hover {
+        color: #ff6f61;
+    }
 `;
 
 const ButtonImage = styled.img`
-  width: 24px;
-  height: 24px;
-  margin-bottom: 5px;
+    width: 24px;
+    height: 24px;
+    margin-bottom: 5px;
 `;
 
 const ButtonLabel = styled.div`
-  font-size: 12px;
-  text-align: center;
+    font-size: 12px;
+    text-align: center;
 `;
 
 export default Ai;
