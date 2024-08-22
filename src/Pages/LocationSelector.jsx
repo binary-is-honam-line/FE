@@ -9,7 +9,7 @@ const locations = [
   ['무안', '신안'],
 ];
 
-const LocationSelector = ({ selectedLocation, setSelectedLocation }) => {
+const LocationSelector = ({ selectedLocation, setSelectedLocation, noBorder }) => {
   const [tempLocation, setTempLocation] = useState(selectedLocation || ''); // 임시로 선택된 지역
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -32,7 +32,13 @@ const LocationSelector = ({ selectedLocation, setSelectedLocation }) => {
 
   return (
     <Container>
-      <InputBox onClick={openModal} readOnly value={selectedLocation || '지역을 선택하세요'} placeholder="지역을 선택하세요" />
+      <InputBox 
+        onClick={openModal} 
+        readOnly 
+        value={selectedLocation || ' '} 
+        placeholder="지역을 선택하세요." 
+        noBorder={noBorder} // 추가된 props
+      />
       {isModalOpen && (
         <ModalOverlay onClick={closeModal}>
           <ModalContent onClick={(e) => e.stopPropagation()}>
@@ -70,13 +76,13 @@ const Container = styled.div`
 `;
 
 const InputBox = styled.input`
-  width: 50%;
-  padding: 10px;
-  font-size: 16px;
-  border: 1px solid #ccc;
+  width: 70%;
+  padding: 5px;
+  font-size: 12px;
+  border: ${({ noBorder }) => (noBorder ? 'none' : '1px solid #ccc')}; 
   border-radius: 4px;
   cursor: pointer;
-  margin-bottom: 10px;
+  background-color: ${({ noBorder }) => (noBorder ? 'transparent' : '#fff')}; 
 `;
 
 const ModalOverlay = styled.div`

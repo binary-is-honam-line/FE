@@ -1,9 +1,13 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 import { useNavigate } from 'react-router-dom';
+import LocationSelector from './LocationSelector';
 
 const PlayerMode = () => {
   const [keyword, setKeyword] = useState("");
+  const [selectedLocation, setSelectedLocation] = useState(''); // 지역 상태
+  const [isSearchClicked, setIsSearchClicked] = useState(false);
+
   const navigate = useNavigate();
 
   const searchQuests = () => {
@@ -12,6 +16,7 @@ const PlayerMode = () => {
       return;
     }
     console.log(`Searching quests with keyword: ${keyword}`);
+    setIsSearchClicked(true);
   };
 
   return (
@@ -20,19 +25,24 @@ const PlayerMode = () => {
       <BackgroundImageRight />
       <AppWrapper>
         <SearchBarWrapper>
+          <LocationContainer>
+            <LocationSelector 
+              selectedLocation={selectedLocation}
+              setSelectedLocation={setSelectedLocation}
+              noBorder={true} // 추가된 props
+            />
+          </LocationContainer>
           <SearchInput
             type="text"
-            placeholder="퀘스트 검색"
+            placeholder="퀘스트 키워드 검색"
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
           />
-          <SearchButton onClick={searchQuests}>
-            <SearchIcon
-              src={`${process.env.PUBLIC_URL}/search.png`}
-              alt="Search"
-            />
+          <SearchButton onClick={searchQuests} isClicked={isSearchClicked}>
+            <SearchIcon src={`${process.env.PUBLIC_URL}/search.png`} alt="Search" />
           </SearchButton>
         </SearchBarWrapper>
+
         <BottomBar>
           <BottomButton onClick={() => navigate('/player')}>
             <ButtonImage
@@ -101,7 +111,7 @@ const AppWrapper = styled.div`
   max-width: 375px;
   height: 100vh;
   background-color: #FEFEFE;
-  padding: 0; /* 패딩 제거 */
+  padding: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -111,33 +121,49 @@ const AppWrapper = styled.div`
 `;
 
 const SearchBarWrapper = styled.div`
-  width: 80%;
-  height: 50px;
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  width: 80%;
+  height: 50px;
+  margin-top: 20px;
   border-radius: 15px;
   overflow: hidden;
   border: 2px solid #A2CA71;
-  margin-top: 20px;
+  background-color: #ffffff;
+`;
+
+const LocationContainer = styled.div`
+  flex: 1.5;
+  padding: 10px;
+  background-color: #f0f0f0;
+  border-right: 1px solid #A2CA71;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
 `;
 
 const SearchInput = styled.input`
-  flex: 1;
+  flex: 2.5;
   padding: 10px;
   border: none;
   outline: none;
+  font-size: 16px;
 `;
 
 const SearchButton = styled.button`
   padding: 0 20px;
-  background-color: #A2CA71;
+  height: 100%;
+  background-color: ${({ isClicked }) => isClicked ? 'transparent' : '#A2CA71'};
   border: none;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+
   &:hover {
-    background-color: #81B265;
+    background-color: ${({ isClicked }) => isClicked ? 'transparent' : '#81B265'};
   }
 `;
 
@@ -145,7 +171,9 @@ const SearchIcon = styled.img`
   width: 24px;
   height: 24px;
   filter: brightness(0) invert(1);
+  background-color: transparent;  // Ensuring the icon has no background
 `;
+
 
 const BottomBar = styled.div`
   width: 100%;
