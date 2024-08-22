@@ -52,6 +52,10 @@ const Stage = () => {
       });
   };
 
+  const handleQuizAnswerChange = (answer) => {
+    setStage(prevStage => ({ ...prevStage, quizAnswer: answer }));
+  };
+
   return (
     <Container>
       <BackgroundImageLeft />
@@ -88,11 +92,20 @@ const Stage = () => {
           />
 
           <Label>정답</Label>
-          <Input
-            name="quizAnswer"
-            value={stage.quizAnswer}
-            onChange={handleInputChange}
-          />
+          <QuizButtonGroup>
+            <QuizButton
+              onClick={() => handleQuizAnswerChange('O')}
+              $active={stage.quizAnswer === 'O'}
+            >
+              O
+            </QuizButton>
+            <QuizButton
+              onClick={() => handleQuizAnswerChange('X')}
+              $active={stage.quizAnswer === 'X'}
+            >
+              X
+            </QuizButton>
+          </QuizButtonGroup>
 
           <SaveButton onClick={handleSave}>저장하기</SaveButton>
         </Form>
@@ -107,7 +120,7 @@ const Stage = () => {
           <ButtonImage src={`${process.env.PUBLIC_URL}/list.png`} alt="List" />
           <ButtonLabel>장소 목록</ButtonLabel>
         </BottomButton>
-        <BottomButton onClick={() => navigate('/ai')}>
+        <BottomButton onClick={() => navigate(`/ai/${questId}`)}>
           <ButtonImage src={`${process.env.PUBLIC_URL}/ai.png`} alt="AI Story" />
           <ButtonLabel>AI 스토리</ButtonLabel>
           <ButtonLabel>작가</ButtonLabel>
@@ -207,12 +220,13 @@ const Value = styled.div`
 
 const Textarea = styled.textarea`
     padding: 10px;
-    font-size: 14px;
+    font-size: 12px;
     border: 1px solid #A2CA71;
     border-radius: 5px;
     margin-bottom: 15px;
     background-color: white;
     width: 100%;
+    height: 80px;
     box-sizing: border-box;
 `;
 
@@ -225,6 +239,30 @@ const Input = styled.input`
     background-color: white;
     width: 100%;
     box-sizing: border-box;
+`;
+
+const QuizButtonGroup = styled.div`
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+`;
+
+const QuizButton = styled.button`
+    flex: 1;
+    padding: 10px;
+    font-size: 18px;
+    background-color: ${props => (props.$active ? '#99cc66' : '#f0f0f0')};
+    color: ${props => (props.$active ? '#fff' : '#333')};
+    border: 1px solid #A2CA71;
+    border-radius: 5px;
+    margin-right: ${props => (props.children === 'O' ? '10px' : '0')};
+    cursor: pointer;
+    font-weight: bold;
+
+    &:hover {
+        background-color: #88bb55;
+        color: white;
+    }
 `;
 
 const SaveButton = styled.button`
