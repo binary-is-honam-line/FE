@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from './Api';
+import LocationSelector from './LocationSelector'; // LocationSelector를 가져옵니다.
 
 const List = () => {
   const navigate = useNavigate();
@@ -166,10 +167,10 @@ const List = () => {
               onChange={(e) => setQuestName(e.target.value)}
             />
             <ModalLabel>위치</ModalLabel>
-            <ModalInput
-              type="text"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
+            {/* LocationSelector를 사용하여 위치를 선택하게 만듭니다. */}
+            <LocationSelector
+              selectedLocation={location}
+              setSelectedLocation={setLocation}
             />
             <ModalLabel>메인 스토리</ModalLabel>
             <ModalTextarea
@@ -195,7 +196,6 @@ const List = () => {
     </Container>
   );
 };
-
 
 const Container = styled.div`
   display: flex;
@@ -241,6 +241,7 @@ const AppWrapper = styled.div`
   align-items: center;
   overflow: auto;
   margin-bottom: 80px;
+  padding: 20px;
   z-index: 1;
 `;
 
@@ -377,8 +378,8 @@ const ModalContent = styled.div`
   padding: 20px;
   border-radius: 10px;
   text-align: center;
-  width: 60%;
-  max-width: 400px;
+  width: 100%;
+  max-width: 375px;
 `;
 
 const ModalTitle = styled.h2`
@@ -416,6 +417,8 @@ const ModalImagePreview = styled.img`
   height: auto;
   margin-bottom: 10px;
   border-radius: 5px;
+  display: block;
+  margin-left: 0; /* 왼쪽 정렬 */
 `;
 
 const ModalButtons = styled.div`
