@@ -18,6 +18,7 @@ import PasswordReset from './Pages/PasswordReset';
 import Stage from './Pages/Stage';
 import Ai from './Pages/Ai';
 import LocationSelector from './Pages/LocationSelector';
+import Album from './Pages/Album';
 
 const App = () => {
   const [places, setPlaces] = useState([]);
@@ -56,6 +57,7 @@ const App = () => {
         <Route path="/mypage" element={<PrivateRoute element={<Mypage />} />} />
         <Route path="/edit" element={<PrivateRoute element={<Edit />} />} />
         <Route path="/password-reset" element={<PrivateRoute element={<PasswordReset />} />} />
+        <Route path="/album" element={<PrivateRoute element={<Album />} />} />
       </Routes>
     </Router>
   );
