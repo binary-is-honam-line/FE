@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import api from './Api';
+import LocationSelector from './LocationSelector'; // LocationSelector 컴포넌트를 불러옵니다.
 
 const PAGE_SIZE = 5; // 페이지당 퀘스트 수
 
@@ -12,7 +13,7 @@ const CreatorMode = () => {
   const [selectedStory, setSelectedStory] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [questName, setQuestName] = useState('');
-  const [location, setLocation] = useState('');
+  const [location, setLocation] = useState(''); // LocationSelector와 연결될 상태
   const [mainStory, setMainStory] = useState('');
   const [imagePreview, setImagePreview] = useState('');
   const [selectedImage, setSelectedImage] = useState(null);
@@ -146,8 +147,9 @@ const CreatorMode = () => {
                     </StoryLocation>
                     <StoryAuthor>
                       <StoryImageIcon src="/user.png" alt="사용자 이미지" />
-                      {story.userName}
+                      {story.userNickname}
                     </StoryAuthor>
+                    <StoryMain>{story.mainStory}</StoryMain>
                   </StoryInfo>
                   <StoryImage src={story.image || "https://via.placeholder.com/100"} alt="대표사진" />
                 </StoryContent>
@@ -189,14 +191,10 @@ const CreatorMode = () => {
               onChange={(e) => setQuestName(e.target.value)}
             />
             <ModalLabel>위치</ModalLabel>
-            <ModalInput
-              type="text"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-            />
+            {/* LocationSelector 컴포넌트를 위치 선택 부분으로 사용합니다 */}
+            <LocationSelector selectedLocation={location} setSelectedLocation={setLocation} />
             <ModalLabel>메인스토리</ModalLabel>
-            <ModalInput
-              type="text"
+            <ModalTextarea
               value={mainStory}
               onChange={(e) => setMainStory(e.target.value)}
             />
@@ -357,6 +355,12 @@ const StoryLocation = styled.p`
   margin-bottom: 5px;
 `;
 
+const StoryMain = styled.p`
+  font-size: 14px;
+  color: #333;
+  white-space: pre-wrap; /* 자동 줄바꿈 */
+`;
+
 const StoryAuthor = styled.p`
   font-size: 14px;
   color: #666;
@@ -436,8 +440,11 @@ const ModalContent = styled.div`
   background-color: white;
   padding: 20px;
   border-radius: 10px;
-  width: 25%;
+  width: 100%;
+  max-width: 375px;
   box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.2);
+  max-height: 90vh;
+  overflow-y: auto; /* 모달이 너무 크면 스크롤 생기도록 */
 `;
 
 const ModalTitle = styled.h2`
@@ -458,6 +465,17 @@ const ModalInput = styled.input`
   border: 1px solid #ddd;
   border-radius: 4px;
   box-sizing: border-box;
+`;
+
+const ModalTextarea = styled.textarea`
+  width: 100%;
+  height: 100px;
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-sizing: border-box;
+  resize: none;
 `;
 
 const ModalImagePreview = styled.img`
