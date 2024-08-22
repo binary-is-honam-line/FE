@@ -454,6 +454,7 @@ const ModalTitle = styled.h2`
 
 const ModalLabel = styled.label`
   margin-bottom: 5px;
+  margin-top: 10px;
   display: block;
   font-weight: bold;
 `;
