@@ -1,9 +1,22 @@
 import React from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
+import api from './Api';
 
 const Mypage = () => {
   const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      const user = JSON.parse(sessionStorage.getItem('user'));
+      await api.post('/logout');
+      sessionStorage.removeItem('user'); // 세션에서 사용자 정보 제거
+      console.log(`${user.email} has logged out.`);
+      navigate('/login'); // 즉시 로그인 페이지로 이동
+    } catch (error) {
+      console.error('로그아웃 에러:', error);
+    }
+  };
 
   return (
     <Container>
@@ -27,7 +40,7 @@ const Mypage = () => {
             <ButtonImage src={`${process.env.PUBLIC_URL}/album.png`} />
             <ButtonLabel>퀘스트 앨범</ButtonLabel>
           </GridButton>
-          <GridButton onClick={() => navigate('/logout')}>
+          <GridButton onClick={handleLogout}>
             <ButtonImage src={`${process.env.PUBLIC_URL}/logout.png`} />
             <ButtonLabel>로그아웃</ButtonLabel>
           </GridButton>
