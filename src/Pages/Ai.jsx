@@ -7,8 +7,7 @@ const Ai = () => {
   const [prompt, setPrompt] = useState('');
   const [mainStory, setMainStory] = useState('');
   const [stages, setStages] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 3; // 페이지당 표시할 아이템 수
+  const [loading, setLoading] = useState(false);
   const { questId } = useParams();
   const navigate = useNavigate();
 
@@ -21,7 +20,9 @@ const Ai = () => {
       console.error("questId가 정의되지 않았습니다.");
       return;
     }
-    
+
+    setLoading(true); // 로딩 시작
+
     api.post(`/api/story-teller/${questId}/story`, null, {
       params: { input: prompt }
     })
@@ -30,6 +31,9 @@ const Ai = () => {
     })
     .catch((error) => {
       console.error("스토리 생성 중 에러 발생:", error);
+    })
+    .finally(() => {
+      setLoading(false); // 로딩 종료
     });
   };
 
@@ -38,7 +42,9 @@ const Ai = () => {
       console.error("questId가 정의되지 않았습니다.");
       return;
     }
-    
+
+    setLoading(true); // 로딩 시작
+
     api.get(`/api/story-teller/${questId}/story`)
     .then((response) => {
       setMainStory(response.data.mainDto.mainStory);
@@ -46,6 +52,9 @@ const Ai = () => {
     })
     .catch((error) => {
       console.error("스토리 불러오기 중 에러 발생:", error);
+    })
+    .finally(() => {
+      setLoading(false); // 로딩 종료
     });
   };
 
@@ -54,20 +63,6 @@ const Ai = () => {
       fetchStories();
     }
   }, [questId]);
-
-  // 페이지네이션 로직
-  const indexOfLastStage = currentPage * itemsPerPage;
-  const indexOfFirstStage = indexOfLastStage - itemsPerPage;
-  const currentStages = stages.slice(indexOfFirstStage, indexOfLastStage);
-  const totalPages = Math.ceil(stages.length / itemsPerPage);
-
-  const nextPage = () => {
-    setCurrentPage((prevPage) => Math.min(prevPage + 1, totalPages));
-  };
-
-  const prevPage = () => {
-    setCurrentPage((prevPage) => Math.max(prevPage - 1, 1));
-  };
 
   return (
     <Container>
@@ -79,39 +74,36 @@ const Ai = () => {
           placeholder="여기에 프롬프트를 입력하세요."
           value={prompt}
           onChange={handlePromptChange}
-          style = {{ minHeight: '50px' }}
+          style={{ minHeight: '50px' }}
         />
-        <GenerateButton onClick={handleGenerate}>생성하기</GenerateButton>
+        <GenerateButton onClick={handleGenerate} disabled={loading}>
+          {loading ? '생성 중...' : '생성하기'}
+        </GenerateButton>
 
-        {mainStory && (
-          <StorySection>
-            <SectionTitle>메인 스토리</SectionTitle>
-            <StoryText>{mainStory}</StoryText>
-          </StorySection>
+        {loading ? (
+          <LoadingIndicator>로딩 중...</LoadingIndicator>
+        ) : (
+          <>
+            {mainStory && (
+              <StorySection>
+                <SectionTitle>메인 스토리</SectionTitle>
+                <StoryText>{mainStory}</StoryText>
+              </StorySection>
+            )}
+
+            {stages.length > 0 && (
+              <SectionContainer>
+                <SectionTitle>장소 스토리</SectionTitle>
+                {stages.map((stage, index) => (
+                  <StoryBox key={index}>
+                    <StageTitle>{stage.stageName}</StageTitle>
+                    <StageStory>{stage.stageStory}</StageStory>
+                  </StoryBox>
+                ))}
+              </SectionContainer>
+            )}
+          </>
         )}
-
-        {currentStages.length > 0 && (
-          <SectionContainer>
-            <SectionTitle>장소 스토리</SectionTitle>
-            {currentStages.map((stage, index) => (
-              <StoryBox key={index}>
-                <StageTitle>{stage.stageName}</StageTitle>
-                <StageStory>{stage.stageStory}</StageStory>
-              </StoryBox>
-            ))}
-          </SectionContainer>
-        )}
-
-        {/* 페이지네이션 버튼 */}
-        <Pagination>
-          <PageButton onClick={prevPage} disabled={currentPage === 1}>
-            이전
-          </PageButton>
-          <PageNumber>{currentPage} / {totalPages}</PageNumber>
-          <PageButton onClick={nextPage} disabled={currentPage === totalPages}>
-            다음
-          </PageButton>
-        </Pagination>
       </AppWrapper>
 
       <BottomBar>
@@ -215,84 +207,68 @@ const GenerateButton = styled.button`
     &:hover {
         background-color: #88bb55;
     }
-`;
 
-const StorySection = styled.div`
-    width: 100%;
-    margin-bottom: 20px;
-`;
-
-const SectionContainer = styled.div`
-    width: 100%;
-    margin-bottom: 20px;
-`;
-
-const SectionTitle = styled.h2`
-    font-size: 18px;
-    margin-bottom: 5px;
-    color: black;
-`;
-
-const StoryText = styled.p`
-    font-size: 14px;
-    color: #333;
-    white-space: pre-wrap;
-`;
-
-const StoryBox = styled.div`
-    padding: 10px;
-    background-color: #E6EFCE;
-    border-left: 5px solid #BEDC74;
-    border-radius: 5px;
-    margin-bottom: 10px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-`;
-
-const StageTitle = styled.h3`
-    font-size: 16px;
-    font-weight: bold;
-    margin-bottom: 5px;
-    background-color: #BEDC74;
-    padding: 5px;
-    border-radius: 3px;
-    color: #333;
-`;
-
-const StageStory = styled.p`
-    font-size: 14px;
-    color: #333;
-    white-space: pre-wrap;
-    padding: 5px;
-    border-radius: 5px;
-    background-color: #FFF;
-    margin-top: 5px;
-`;
-
-const Pagination = styled.div`
-    display: flex;
-    justify-content: center;
-    margin: 20px 0;
-`;
-
-const PageButton = styled.button`
-    padding: 8px 12px;
-    margin: 0 5px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    background-color: ${({ disabled }) => (disabled ? '#ccc' : '#A2CA71')};
-    color: ${({ disabled }) => (disabled ? '#fff' : '#333')};
-    cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
-
-    &:hover {
-        background-color: #A2CA71;
-        color: #fff;
+    &:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
     }
 `;
 
-const PageNumber = styled.span`
-    padding: 8px 12px;
-    font-size: 16px;
-    color: #333;
+const LoadingIndicator = styled.div`
+  font-size: 18px;
+  color: #888;
+  margin-top: 20px;
+`;
+
+const StorySection = styled.div`
+  width: 100%;
+  margin-bottom: 20px;
+`;
+
+const SectionContainer = styled.div`
+  width: 100%;
+  margin-bottom: 20px;
+`;
+
+const SectionTitle = styled.h2`
+  font-size: 18px;
+  margin-bottom: 5px;
+  color: #4CAF50;
+`;
+
+const StoryText = styled.p`
+  font-size: 14px;
+  color: #333;
+  white-space: pre-wrap;
+`;
+
+const StoryBox = styled.div`
+  padding: 10px;
+  background-color: #E6EFCE;
+  border-left: 5px solid #BEDC74;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+`;
+
+const StageTitle = styled.h3`
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 5px;
+  background-color: #BEDC74;
+  padding: 5px;
+  border-radius: 3px;
+  color: #333;
+`;
+
+const StageStory = styled.p`
+  font-size: 14px;
+  color: #333;
+  white-space: pre-wrap;
+  padding: 5px;
+  border-radius: 5px;
+  background-color: #FFF;
+  margin-top: 5px;
 `;
 
 const BottomBar = styled.div`

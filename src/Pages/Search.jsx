@@ -4,6 +4,8 @@ import styled from "styled-components";
 import { useNavigate, useParams } from 'react-router-dom';
 import api from './Api';
 
+const MAX_STAGES = 10; // 최대 스테이지 수를 10개로 설정
+
 const Search = () => {
   const [map, setMap] = useState(null);
   const [keyword, setKeyword] = useState("");
@@ -157,7 +159,7 @@ const Search = () => {
   };
 
   const createMarker = (position, place, registeredPlace) => {
-    let imageSrc = `${process.env.PUBLIC_URL}/monkeys.png`;
+    let imageSrc = `${process.env.PUBLIC_URL}/monkey.png`;
 
     if (registeredPlace) {
       const index = registeredPlace.sequenceNumber;
@@ -193,6 +195,11 @@ const Search = () => {
   };
 
   const handleRegister = () => {
+    if (registeredPlaces.length >= MAX_STAGES) {
+      alert(`스테이지는 최대 ${MAX_STAGES}개까지 등록할 수 있습니다.`);
+      return;
+    }
+
     if (!selectedPlace) return;
 
     const stageData = {
