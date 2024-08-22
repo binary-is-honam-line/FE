@@ -17,6 +17,7 @@ import Edit from './Pages/Edit';
 import PasswordReset from './Pages/PasswordReset';
 import Stage from './Pages/Stage';
 import Ai from './Pages/Ai';
+import LocationSelector from './Pages/LocationSelector';
 
 const App = () => {
   const [places, setPlaces] = useState([]);
@@ -37,6 +38,7 @@ const App = () => {
         {/* Private Routes */}
         <Route path="/select" element={<PrivateRoute element={<SelectMode />} />} />
         <Route path="/creator" element={<PrivateRoute element={<CreatorMode />} />} />
+        <Route path="/locationselector" element={<PrivateRoute element={<LocationSelector />} />} />
 
         {/* questId를 파라미터로 받는 Search 라우트 */}
         <Route path="/search/:questId" element={<PrivateRoute element={<Search addPlace={addPlace} />} />} />
