@@ -49,7 +49,8 @@ const App = () => {
         {/* questId와 stageId를 파라미터로 받는 Stage 라우트 */}
         <Route path="/stage/:questId/:stageId" element={<PrivateRoute element={<Stage />} />} />
 
-        <Route path="/ai" element={<PrivateRoute element={<Ai />} />} />
+        {/* questId를 파라미터로 받는 Ai 라우트 */}
+        <Route path="/ai/:questId" element={<PrivateRoute element={<Ai />} />} />
 
         <Route path="/player" element={<PrivateRoute element={<PlayerMode />} />} />
         <Route path="/mypage" element={<PrivateRoute element={<Mypage />} />} />

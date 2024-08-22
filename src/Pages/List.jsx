@@ -148,7 +148,7 @@ const List = () => {
           <ButtonImage src={`${process.env.PUBLIC_URL}/list.png`} alt="List" />
           <ButtonLabel>스테이지 목록</ButtonLabel>
         </BottomButton>
-        <BottomButton onClick={() => navigate('/ai')}>
+        <BottomButton onClick={() => navigate(`/ai/${questId}`)}>
           <ButtonImage src={`${process.env.PUBLIC_URL}/ai.png`} alt="AI Story" />
           <ButtonLabel>AI 스토리</ButtonLabel>
           <ButtonLabel>작가</ButtonLabel>
@@ -243,6 +243,7 @@ const AppWrapper = styled.div`
   margin-bottom: 80px;
   padding: 20px;
   z-index: 1;
+  box-sizing: border-box;
 `;
 
 const Header = styled.div`

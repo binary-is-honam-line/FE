@@ -253,7 +253,7 @@ const Search = () => {
             />
             <ButtonLabel>스테이지 목록</ButtonLabel>
           </BottomButton>
-          <BottomButton onClick={() => navigate('/ai')}>
+          <BottomButton onClick={() => navigate(`/ai/${questId}`)}>
             <ButtonImage src={`${process.env.PUBLIC_URL}/ai.png`} alt="AI Story" />
             <ButtonLabel>AI 스토리</ButtonLabel>
             <ButtonLabel>작가</ButtonLabel>
