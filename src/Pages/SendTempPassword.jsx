@@ -51,6 +51,29 @@ const AppWrapper = styled.div`
     z-index: 1;
 `;
 
+const Header = styled.div`
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    position: absolute;
+    top: 30px;
+    left: 20px;
+`;
+
+const BackButton = styled.button`
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 15px;
+    color: #333;
+    font-weight: bold;
+
+    &:hover {
+        color: #000;
+    }
+`;
+
 const Logo = styled.img`
     width: 200px;
     margin-top: 60%;
@@ -134,7 +157,6 @@ const SendTempPassword = () => {
     const [errorMessage, setErrorMessage] = useState('');
 
     useEffect(() => {
-        // 페이지 로드 시 세션을 확인하여 이미 로그인된 상태라면 선택모드로 리다이렉트
         const user = sessionStorage.getItem('user');
         if (user) {
             navigate('/select');
@@ -143,7 +165,6 @@ const SendTempPassword = () => {
 
     const handleSendTempPasswordClick = async () => {
         try {
-            // API 호출
             const response = await api.post('/api/user/temp-password', null, {
                 params: {
                     name: name,
@@ -155,7 +176,7 @@ const SendTempPassword = () => {
             const { data } = response;
             if (response.status === 200 && data) {
                 setTempPassword(data);
-                setModalOpen(true); // 모달 열기
+                setModalOpen(true);
             } else {
                 setErrorMessage('임시 비밀번호를 생성하는데 실패했습니다.');
             }
@@ -174,7 +195,6 @@ const SendTempPassword = () => {
     };
 
     const handleLoginButtonClick = () => {
-        // 로그인 페이지로 이동
         navigate('/login');
         closeModal();
     };
@@ -184,6 +204,9 @@ const SendTempPassword = () => {
             <BackgroundImageLeft />
             <BackgroundImageRight />
             <AppWrapper>
+                <Header>
+                    <BackButton onClick={() => navigate(-1)}>뒤로가기</BackButton>
+                </Header>
                 <Logo src={logoImage} alt="Logo" />
                 <Input
                     type="text"
@@ -203,7 +226,7 @@ const SendTempPassword = () => {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                 />
-                <SendTempPasswordButton onClick={handleSendTempPasswordClick}>임시 비밀번호 전송</SendTempPasswordButton>
+                <SendTempPasswordButton onClick={handleSendTempPasswordClick}>임시 비밀번호 생성</SendTempPasswordButton>
 
                 {modalOpen && (
                     <ModalBackdrop>
