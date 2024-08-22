@@ -45,6 +45,7 @@ const Mypage = () => {
             <ButtonLabel>로그아웃</ButtonLabel>
           </GridButton>
         </ButtonGrid>
+        
         <BottomBar>
           <BottomButton onClick={() => navigate('/player')}>
             <ButtonImageBottom
@@ -63,6 +64,10 @@ const Mypage = () => {
               src={`${process.env.PUBLIC_URL}/mypage.png`}
             />
             <ButtonLabelBottom>마이페이지</ButtonLabelBottom>
+          </BottomButton>
+          <BottomButton onClick={() => navigate('/select')}>
+            <ButtonImageBottom src={`${process.env.PUBLIC_URL}/mode.png`} />
+            <ButtonLabelBottom>모드선택</ButtonLabelBottom>
           </BottomButton>
         </BottomBar>
       </AppWrapper>

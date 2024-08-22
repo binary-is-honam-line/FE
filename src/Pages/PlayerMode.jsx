@@ -37,23 +37,24 @@ const PlayerMode = () => {
           <BottomButton onClick={() => navigate('/player')}>
             <ButtonImage
               src={`${process.env.PUBLIC_URL}/search.png`}
-              alt="Story Search"
             />
             <ButtonLabel>퀘스트 검색</ButtonLabel>
           </BottomButton>
           <BottomButton onClick={() => navigate('/play')}>
             <ButtonImage
               src={`${process.env.PUBLIC_URL}/play.png`}
-              alt="Play"
             />
             <ButtonLabel>플레이</ButtonLabel>
           </BottomButton>
           <BottomButton onClick={() => navigate('/mypage')}>
             <ButtonImage
               src={`${process.env.PUBLIC_URL}/mypage.png`}
-              alt="My Page"
             />
             <ButtonLabel>마이페이지</ButtonLabel>
+          </BottomButton>
+          <BottomButton onClick={() => navigate('/select')}>
+            <ButtonImage src={`${process.env.PUBLIC_URL}/mode.png`} />
+            <ButtonLabel>모드선택</ButtonLabel>
           </BottomButton>
         </BottomBar>
       </AppWrapper>
@@ -167,7 +168,7 @@ const BottomButton = styled.button`
   cursor: pointer;
 
   &:hover {
-    color: #ff6f61;
+    color: #387F39;
   }
 `;
 

@@ -125,6 +125,10 @@ const Stage = () => {
           <ButtonLabel>AI 스토리</ButtonLabel>
           <ButtonLabel>작가</ButtonLabel>
         </BottomButton>
+        <BottomButton onClick={() => navigate('/select')}>
+            <ButtonImage src={`${process.env.PUBLIC_URL}/mode.png`} />
+            <ButtonLabel>모드선택</ButtonLabel>
+        </BottomButton>
       </BottomBar>
     </Container>
   );
@@ -305,7 +309,7 @@ const BottomButton = styled.button`
     cursor: pointer;
 
     &:hover {
-        color: #ff6f61;
+        color: #387F39;
     }
 `;
 
