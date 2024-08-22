@@ -51,6 +51,29 @@ const AppWrapper = styled.div`
     z-index: 1;
 `;
 
+const Header = styled.div`
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    position: absolute;
+    top: 30px;
+    left: 20px;
+`;
+
+const BackButton = styled.button`
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 15px;
+    color: #333;
+    font-weight: bold;
+
+    &:hover {
+        color: #000;
+    }
+`;
+
 const Logo = styled.img`
     width: 200px;
     margin-top: 50%;
@@ -182,6 +205,9 @@ const FindId = () => {
             <BackgroundImageLeft />
             <BackgroundImageRight />
             <AppWrapper>
+                <Header>
+                    <BackButton onClick={() => navigate(-1)}>뒤로가기</BackButton>
+                </Header>
                 <Logo src={logoImage} alt="Logo" />
                 <Input
                     type="text"
