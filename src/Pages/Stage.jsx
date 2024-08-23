@@ -17,6 +17,15 @@ const Stage = () => {
   });
 
   useEffect(() => {
+    // 세션 스토리지에서 최신 questId를 가져옴
+    const latestQuestId = sessionStorage.getItem('latestQuestId');
+
+    // 현재 questId와 최신 questId가 일치하지 않으면 /select로 리디렉션
+    if (questId !== latestQuestId) {
+      navigate('/select');
+      return; // 리디렉션 후 더 이상의 로직을 실행하지 않도록 리턴
+    }
+
     // 스테이지 상세 정보 불러오기
     api.get(`/api/stages/${questId}/${stageId}`)
       .then(response => {
@@ -25,7 +34,7 @@ const Stage = () => {
       .catch(error => {
         console.error('스테이지 정보를 불러오는데 실패했습니다.', error);
       });
-  }, [questId, stageId]);
+  }, [questId, stageId, navigate]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
