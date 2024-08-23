@@ -192,7 +192,7 @@ const List = () => {
             onChange={(e) => setMainStory(e.target.value)}
             style={{minHeight: '100px'}}
           />
-          <ModalLabel>추천 인원 수</ModalLabel>
+          <ModalLabel>적정 인원</ModalLabel>
           <ModalInput
             type="number"
             placeholder="5"

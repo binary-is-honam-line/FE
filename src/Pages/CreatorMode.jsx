@@ -159,11 +159,11 @@ const CreatorMode = () => {
                     </StoryAuthor>
                     <StoryCount>
                       <StoryImageIcon src="/count.png" alt="적정인원수 이미지" />
-                      {story.headCount}
+                      적정 인원: {story.headCount}명
                     </StoryCount>
                     <StoryTime>
                       <StoryImageIcon src="/time.png" alt="예상시간 이미지" />
-                      {story.time}
+                      예상 시간: {story.time}
                     </StoryTime>
                   </StoryInfo>
                   <StoryImage src={story.image || "https://via.placeholder.com/100"} alt="대표사진" />
@@ -213,7 +213,7 @@ const CreatorMode = () => {
               value={mainStory}
               onChange={(e) => setMainStory(e.target.value)}
             />
-            <ModalLabel>추천 인원 수</ModalLabel>
+            <ModalLabel>적정 인원</ModalLabel>
             <ModalInput
               type="number"
               placeholder="5"
