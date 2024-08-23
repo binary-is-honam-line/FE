@@ -2,12 +2,13 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import { useNavigate } from 'react-router-dom';
 import LocationSelector from './LocationSelector';
+import PlayModal from './PlayModal';
 
 const PlayerMode = () => {
   const [keyword, setKeyword] = useState("");
-  const [selectedLocation, setSelectedLocation] = useState(''); // 지역 상태
+  const [selectedLocation, setSelectedLocation] = useState('');
   const [isSearchClicked, setIsSearchClicked] = useState(false);
-  const [quests, setQuests] = useState([  // 하드코딩된 퀘스트 목록
+  const [quests, setQuests] = useState([
     {
       questId: 1,
       questName: "광주 맛집 여행",
@@ -28,6 +29,8 @@ const PlayerMode = () => {
     },
   ]);
 
+  const [selectedQuest, setSelectedQuest] = useState(null); // 선택된 퀘스트 상태
+
   const navigate = useNavigate();
 
   const searchQuests = () => {
@@ -46,8 +49,16 @@ const PlayerMode = () => {
     }
   });
 
-  const handlePlayClick = (questId) => {
-    navigate(`/play/${questId}`);
+  const handlePlayClick = (quest) => {
+    setSelectedQuest(quest); // 선택된 퀘스트 설정
+  };
+
+  const handleCloseModal = () => {
+    setSelectedQuest(null); // 모달 닫기
+  };
+
+  const handlePlayQuest = () => {
+    navigate(`/play/${selectedQuest.questId}`); // 퀘스트 플레이 화면으로 이동
   };
 
   return (
@@ -99,7 +110,7 @@ const PlayerMode = () => {
                 </StoryInfo>
                 <StoryImage src={quest.imageUrl} alt="Quest" />
               </StoryContent>
-              <PlayButton onClick={() => handlePlayClick(quest.questId)}>플레이 하기</PlayButton>
+              <PlayButton onClick={() => handlePlayClick(quest)}>플레이 하기</PlayButton>
             </StoryBox>
           ))}
         </StoryList>
@@ -129,9 +140,19 @@ const PlayerMode = () => {
           </BottomButton>
         </BottomBar>
       </AppWrapper>
+
+      {selectedQuest && (
+        <PlayModal
+          quest={selectedQuest}
+          onClose={handleCloseModal}
+          onPlay={handlePlayQuest}
+        />
+      )}
     </Container>
   );
 };
+
+// 스타일링
 
 const Container = styled.div`
   display: flex;
