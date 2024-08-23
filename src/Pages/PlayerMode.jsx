@@ -7,16 +7,47 @@ const PlayerMode = () => {
   const [keyword, setKeyword] = useState("");
   const [selectedLocation, setSelectedLocation] = useState(''); // 지역 상태
   const [isSearchClicked, setIsSearchClicked] = useState(false);
+  const [quests, setQuests] = useState([  // 하드코딩된 퀘스트 목록
+    {
+      questId: 1,
+      questName: "광주 맛집 여행",
+      location: "광주",
+      nickname: "배고픈담곰이",
+      headCount: "4",
+      time: "02:00:00",
+      imageUrl: "/monkey.png",
+    },
+    {
+      questId: 2,
+      questName: "목포 맛집 여정",
+      location: "목포",
+      nickname: "집에가고싶은농곰",
+      headCount: "3",
+      time: "01:30:00",
+      imageUrl: "/monkeys.png",
+    },
+  ]);
 
   const navigate = useNavigate();
 
   const searchQuests = () => {
-    if (!keyword.trim()) {
-      alert("키워드를 입력해주세요!");
-      return;
-    }
-    console.log(`Searching quests with keyword: ${keyword}`);
     setIsSearchClicked(true);
+  };
+
+  const filteredQuests = quests.filter(quest => {
+    if (selectedLocation && keyword) {
+      return quest.location === selectedLocation && quest.questName.includes(keyword);
+    } else if (selectedLocation) {
+      return quest.location === selectedLocation;
+    } else if (keyword) {
+      return quest.questName.includes(keyword);
+    } else {
+      return true;
+    }
+  });
+
+  const handlePlayClick = (questId) => {
+    navigate(`/play/${questId}`);
   };
 
   return (
@@ -29,7 +60,7 @@ const PlayerMode = () => {
             <LocationSelector 
               selectedLocation={selectedLocation}
               setSelectedLocation={setSelectedLocation}
-              noBorder={true} // 추가된 props
+              noBorder={true}
             />
           </LocationContainer>
           <SearchInput
@@ -42,6 +73,36 @@ const PlayerMode = () => {
             <SearchIcon src={`${process.env.PUBLIC_URL}/search.png`} alt="Search" />
           </SearchButton>
         </SearchBarWrapper>
+
+        <StoryList>
+          {filteredQuests.map((quest) => (
+            <StoryBox key={quest.questId}>
+              <StoryContent>
+                <StoryInfo>
+                  <StoryTitle>{quest.questName}</StoryTitle>
+                  <StoryLocation>
+                    <StoryImageIcon src="/location.png" alt="Location" />
+                    {quest.location}
+                  </StoryLocation>
+                  <StoryAuthor>
+                    <StoryImageIcon src="/user.png" alt="User" />
+                    {quest.nickname}
+                  </StoryAuthor>
+                  <StoryCount>
+                    <StoryImageIcon src="/count.png" alt="Head Count" />
+                    적정 인원: {quest.headCount}명
+                  </StoryCount>
+                  <StoryTime>
+                    <StoryImageIcon src="/time.png" alt="Time" />
+                    예상 시간: {quest.time}
+                  </StoryTime>
+                </StoryInfo>
+                <StoryImage src={quest.imageUrl} alt="Quest" />
+              </StoryContent>
+              <PlayButton onClick={() => handlePlayClick(quest.questId)}>플레이 하기</PlayButton>
+            </StoryBox>
+          ))}
+        </StoryList>
 
         <BottomBar>
           <BottomButton onClick={() => navigate('/player')}>
@@ -155,7 +216,7 @@ const SearchInput = styled.input`
 const SearchButton = styled.button`
   padding: 0 20px;
   height: 100%;
-  background-color: ${({ isClicked }) => isClicked ? 'transparent' : '#A2CA71'};
+  background-color: #A2CA71;
   border: none;
   cursor: pointer;
   display: flex;
@@ -163,7 +224,7 @@ const SearchButton = styled.button`
   justify-content: center;
 
   &:hover {
-    background-color: ${({ isClicked }) => isClicked ? 'transparent' : '#81B265'};
+    background-color: #81B265;
   }
 `;
 
@@ -174,6 +235,101 @@ const SearchIcon = styled.img`
   background-color: transparent;
 `;
 
+const StoryList = styled.div`
+  flex-grow: 1;
+  overflow-y: auto;
+  width: 90%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+`;
+
+const StoryBox = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border: 2px solid #DEDEDE;
+  border-radius: 10px;
+  background-color: white;
+  padding: 15px;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+`;
+
+const StoryContent = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const StoryInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const StoryImageIcon = styled.img`
+  width: 16px;
+  height: 16px;
+  margin-right: 2px;
+`;
+
+const StoryTitle = styled.h2`
+  font-size: 18px;
+  margin-bottom: 1px;
+`;
+
+const StoryLocation = styled.p`
+  font-size: 14px;
+  color: #666;
+  display: flex;
+  align-items: center;
+  margin-bottom: 1px;
+`;
+
+const StoryAuthor = styled.p`
+  font-size: 14px;
+  color: #666;
+  display: flex;
+  align-items: center;
+  margin-bottom: 1px;
+`;
+
+const StoryCount = styled.p`
+  font-size: 14px;
+  color: #666;
+  display: flex;
+  align-items: center;
+  margin-bottom: 1px;
+`;
+
+const StoryTime = styled.p`
+  font-size: 14px;
+  color: #666;
+  display: flex;
+  align-items: center;
+`;
+
+const StoryImage = styled.img`
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-left: 20px;
+`;
+
+const PlayButton = styled.button`
+  padding: 10px 20px;
+  background-color: #A2CA71;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 10px;
+
+  &:hover {
+    background-color: #81B265;
+  }
+`;
 
 const BottomBar = styled.div`
   width: 100%;
