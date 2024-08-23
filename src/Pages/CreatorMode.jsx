@@ -45,23 +45,17 @@ const CreatorMode = () => {
       });
   }, []);
   
-
   const handleAddStory = () => {
     api.post('/api/quests/create')
-      .then(() => api.get('/api/quests/'))
       .then(response => {
-        const quests = response.data;
-        if (quests.length > 0) {
-          const latestQuest = quests[quests.length - 1];
-          navigate(`/search/${latestQuest.questId}`);
-        } else {
-          console.error("생성된 퀘스트가 없습니다.");
-        }
+        const questId = response.data.questId; // 생성된 퀘스트의 questId
+        sessionStorage.setItem('latestQuestId', questId); // 최신 questId를 세션 스토리지에 저장
+        navigate(`/search/${questId}`); // 새 퀘스트의 상세 페이지로 이동
       })
       .catch(error => {
-        console.error("퀘스트를 생성하거나 조회하는데 실패했습니다.", error);
+        console.error("퀘스트를 생성하는데 실패했습니다.", error);
       });
-  };
+  };  
 
   const handleEditStory = (questId) => {
     api.get(`/api/quests/${questId}/update`)

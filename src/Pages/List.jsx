@@ -20,6 +20,15 @@ const List = () => {
   const [time, setTime] = useState('');
 
   useEffect(() => {
+    // 최신 questId를 세션 스토리지에서 가져옴
+    const latestQuestId = sessionStorage.getItem('latestQuestId');
+
+    if (questId !== latestQuestId) {
+      // questId가 최신 questId와 일치하지 않으면 /select로 리디렉션
+      navigate('/select');
+      return; // 리디렉션 후 더 이상의 로직을 실행하지 않도록 리턴
+    }
+
     if (questId) {
       api.get(`/api/stages/${questId}`)
         .then(response => {
@@ -33,7 +42,7 @@ const List = () => {
           console.error("API call failed. Details:", error);
         });
     }
-  }, [questId]);
+  }, [questId, navigate]);
 
   const handleDelete = (stageId) => {
     if (window.confirm('정말로 이 스테이지를 삭제하시겠습니까?')) {

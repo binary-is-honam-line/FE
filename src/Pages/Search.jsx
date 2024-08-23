@@ -18,18 +18,27 @@ const Search = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // 최신 questId를 세션 스토리지에서 가져옴
+    const latestQuestId = sessionStorage.getItem('latestQuestId');
+  
+    if (questId !== latestQuestId) {
+      // questId가 최신 questId와 일치하지 않으면 /select로 리디렉션
+      navigate('/select');
+      return; // 리디렉션 후 더 이상의 로직을 실행하지 않도록 리턴
+    }
+  
     const script = document.createElement("script");
     script.async = true;
     script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.REACT_APP_KAKAO_API_KEY}&autoload=false&libraries=services`;
     document.head.appendChild(script);
-
+  
     script.onload = () => {
       kakao.maps.load(() => {
         if (!kakao.maps.services) {
           console.error("Kakao Maps services 객체를 사용할 수 없습니다.");
           return;
         }
-
+  
         const container = document.getElementById("Mymap");
         const options = {
           center: new kakao.maps.LatLng(35.1595454, 126.8526012), 
@@ -37,18 +46,18 @@ const Search = () => {
         };
         const mapInstance = new kakao.maps.Map(container, options);
         setMap(mapInstance);
-
+  
         if (questId) {
           loadStages(questId, mapInstance);
         }
       });
     };
-
+  
     script.onerror = () => {
       console.error("Kakao Maps 스크립트를 로드하지 못했습니다.");
     };
-  }, [questId]);
-
+  }, [questId, navigate]);
+  
   const loadStages = (questId, mapInstance) => {
     api.get(`/api/stages/${questId}`)
       .then(response => {
