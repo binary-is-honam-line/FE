@@ -7,6 +7,7 @@ import SendTempPassword from './Pages/SendTempPassword';
 import Signup from './Pages/Signup';
 
 import PrivateRoute from './Pages/PrivateRoute';
+import StoryTelling from './Pages/StoryTelling';
 import SelectMode from './Pages/SelectMode';
 import CreatorMode from './Pages/CreatorMode';
 import Search from './Pages/Search';
@@ -37,6 +38,7 @@ const App = () => {
         <Route path="/signup" element={<Signup />} />
 
         {/* Private Routes */}
+        <Route path="/story" element={<PrivateRoute element={<StoryTelling />} />} />
         <Route path="/select" element={<PrivateRoute element={<SelectMode />} />} />
         <Route path="/creator" element={<PrivateRoute element={<CreatorMode />} />} />
         <Route path="/locationselector" element={<PrivateRoute element={<LocationSelector />} />} />
