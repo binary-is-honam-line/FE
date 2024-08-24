@@ -170,7 +170,7 @@ const Login = () => {
 
             console.log('로그인 성공:', response.data.message); // 로그인 성공 메시지 출력
             console.log('로그인 성공한 이메일:', response.data.user); // 로그인 성공한 이메일 출력
-            navigate('/select'); // 로그인 성공 시 선택모드 페이지로 이동
+            navigate('/story'); // 로그인 성공 시 스토리텔링 페이지로 이동
         } catch (error) {
             console.error('로그인 실패:', error.response?.data || error.message); // 서버에서 반환된 에러 메시지 출력
             setErrorMessage(error.response?.data?.message || '로그인에 실패했습니다. 다시 시도해주세요.'); // 에러 메시지 설정
