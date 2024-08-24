@@ -22,7 +22,13 @@ const PlayerMode = () => {
     const fetchInitialQuests = async () => {
       try {
         const response = await api.get('/api/search/suggest');
-        setQuests(response.data);
+        const questsWithImages = await Promise.all(
+          response.data.map(async (quest) => {
+            const imageUrl = await fetchQuestImage(quest.questId);
+            return { ...quest, imageUrl };
+          })
+        );
+        setQuests(questsWithImages);
       } catch (error) {
         console.error('Error fetching initial quests:', error);
       }
@@ -30,6 +36,19 @@ const PlayerMode = () => {
 
     fetchInitialQuests();
   }, []);
+
+  // 퀘스트 이미지 가져오기
+  const fetchQuestImage = async (questId) => {
+    try {
+      const response = await api.get(`/api/quests/${questId}/image`, {
+        responseType: 'blob',
+      });
+      return URL.createObjectURL(response.data);
+    } catch (error) {
+      console.error(`Error fetching image for quest ${questId}:`, error);
+      return '/defaultImage.png'; // 기본 이미지 경로
+    }
+  };
 
   // 검색 퀘스트 가져오기 (전체 목록)
   const searchQuests = async () => {
@@ -40,7 +59,13 @@ const PlayerMode = () => {
           location: selectedLocation || '',  // 지역이 선택되지 않으면 빈 문자열로 처리
         },
       });
-      setQuests(response.data);
+      const questsWithImages = await Promise.all(
+        response.data.map(async (quest) => {
+          const imageUrl = await fetchQuestImage(quest.questId);
+          return { ...quest, imageUrl };
+        })
+      );
+      setQuests(questsWithImages);
       setCurrentPage(1); // 검색 시 첫 페이지로 이동
     } catch (error) {
       console.error('Error searching quests:', error);
