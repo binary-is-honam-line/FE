@@ -9,7 +9,7 @@ const PlayModal = ({ quest, onClose, onPlay }) => {
                     <Title>퀘스트 정보</Title>
                 </Header>
                 <QuestImageWrapper>
-                    <QuestImage src={`${process.env.PUBLIC_URL}${quest.imageUrl}`} alt="Quest Image" />
+                    <QuestImage src={quest.imageUrl} alt="Quest Image" />
                 </QuestImageWrapper>
                 <QuestInfo>
                     <QuestName>{quest.questName}</QuestName>
@@ -19,7 +19,7 @@ const PlayModal = ({ quest, onClose, onPlay }) => {
                     </InfoItem>
                     <InfoItem>
                         <InfoIcon src={`${process.env.PUBLIC_URL}/user.png`} alt="User Icon" />
-                        {quest.nickname}
+                        {quest.userNickname}
                     </InfoItem>
                     <Separator />
                     <Label>스토리</Label>
@@ -27,8 +27,8 @@ const PlayModal = ({ quest, onClose, onPlay }) => {
                     <Separator />
                     <Label>장소</Label>
                     <Stages>
-                        {quest.stages && quest.stages.length > 0 ? (
-                            quest.stages.map((stage, index) => (
+                        {quest.stageNames && quest.stageNames.length > 0 ? (
+                            quest.stageNames.map((stage, index) => (
                                 <Stage key={index}>{stage}</Stage>
                             ))
                         ) : (

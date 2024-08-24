@@ -186,7 +186,7 @@ const CreatorMode = () => {
               <PageButton
                 key={index}
                 onClick={() => handlePageChange(index + 1)}
-                active={index + 1 === currentPage}
+                $active={index + 1 === currentPage}
               >
                 {index + 1}
               </PageButton>
@@ -453,8 +453,8 @@ const PageButton = styled.button`
   margin: 0 5px;
   border: 1px solid #ccc;
   border-radius: 4px;
-  background-color: ${({ active }) => (active ? '#A2CA71' : '#fff')};
-  color: ${({ active }) => (active ? '#fff' : '#333')};
+  background-color: ${({ $active }) => ($active ? '#A2CA71' : '#fff')}; 
+  color: ${({ $active }) => ($active ? '#fff' : '#333')};
   cursor: pointer;
 
   &:hover {
@@ -462,6 +462,7 @@ const PageButton = styled.button`
     color: #fff;
   }
 `;
+
 
 const ModalOverlay = styled.div`
   position: fixed;

@@ -12,6 +12,7 @@ const PlayerMode = () => {
   const [selectedLocation, setSelectedLocation] = useState('');
   const [quests, setQuests] = useState([]);
   const [selectedQuest, setSelectedQuest] = useState(null);
+  const [questDetail, setQuestDetail] = useState(null); // 모달에 표시할 퀘스트 상세 정보
   const [currentPage, setCurrentPage] = useState(1); // 현재 페이지 상태
 
   const navigate = useNavigate();
@@ -46,12 +47,35 @@ const PlayerMode = () => {
     }
   };
 
+  // 퀘스트 상세 정보 및 이미지 가져오기
+  const fetchQuestDetail = async (questId) => {
+    try {
+        // 퀘스트 상세 정보 가져오기
+        const response = await api.get(`/api/quests/${questId}`);
+        const questDetailData = response.data;
+
+        // 이미지 가져오기
+        const imageResponse = await api.get(`/api/quests/${questId}/image`, { responseType: 'blob' });
+        const imageUrl = URL.createObjectURL(imageResponse.data);
+
+        // 퀘스트 상세 정보와 이미지 URL 설정
+        setQuestDetail({
+            ...questDetailData,
+            imageUrl: imageUrl // blob URL 사용
+        });
+    } catch (error) {
+        console.error('Error fetching quest detail or image:', error);
+    }
+  };
+
   const handlePlayClick = (quest) => {
+    fetchQuestDetail(quest.questId); // 퀘스트 상세 정보 가져오기
     setSelectedQuest(quest);
   };
 
   const handleCloseModal = () => {
     setSelectedQuest(null);
+    setQuestDetail(null); // 모달 닫을 때 데이터 초기화
   };
 
   const handlePlayQuest = () => {
@@ -74,11 +98,11 @@ const PlayerMode = () => {
         <FixedHeader>
           <SearchBarWrapper>
             <LocationContainer>
-              <LocationSelector 
-                selectedLocation={selectedLocation}
-                setSelectedLocation={setSelectedLocation}
-                noBorder={true}
-              />
+            <LocationSelector 
+              selectedLocation={selectedLocation}
+              setSelectedLocation={setSelectedLocation}
+              noBorder={true} // 여기서는 $를 빼고 전달
+            />
             </LocationContainer>
             <SearchInput
               type="text"
@@ -131,7 +155,7 @@ const PlayerMode = () => {
                 <PageButton
                   key={index}
                   onClick={() => handlePageChange(index + 1)}
-                  active={index + 1 === currentPage}
+                  $active={index + 1 === currentPage}
                 >
                   {index + 1}
                 </PageButton>
@@ -166,9 +190,9 @@ const PlayerMode = () => {
         </BottomBar>
       </AppWrapper>
 
-      {selectedQuest && (
+      {questDetail && (
         <PlayModal
-          quest={selectedQuest}
+          quest={questDetail} // questDetail을 PlayModal에 전달
           onClose={handleCloseModal}
           onPlay={handlePlayQuest}
         />
@@ -320,8 +344,8 @@ const PageButton = styled.button`
   margin: 0 5px;
   border: 1px solid #ccc;
   border-radius: 4px;
-  background-color: ${({ active }) => (active ? '#A2CA71' : '#fff')};
-  color: ${({ active }) => (active ? '#fff' : '#333')};
+  background-color: ${({ $active }) => ($active ? '#A2CA71' : '#fff')}; 
+  color: ${({ $active }) => ($active ? '#fff' : '#333')};
   cursor: pointer;
 
   &:hover {
@@ -329,6 +353,7 @@ const PageButton = styled.button`
     color: #fff;
   }
 `;
+
 
 const StoryBox = styled.div`
   display: flex;
