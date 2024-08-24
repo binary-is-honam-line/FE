@@ -1,16 +1,33 @@
 import React from 'react';
 import styled, { keyframes } from 'styled-components';
+import api from './Api';
 
 const PlayModal = ({ quest, onClose, onPlay }) => {
+    const handlePlayClick = async () => {
+        try {
+            // 1. 좌표 목록을 확인하여 userStageId가 존재하는지 확인
+            const pointsResponse = await api.get(`/api/play/${quest.questId}/points`);
+            const points = pointsResponse.data;
+
+            // 2. userStageId가 존재하지 않으면 새로운 UserStage를 생성
+            if (points.length === 0) {
+                await api.get(`/api/play/${quest.questId}/start`);
+            }
+
+            // 3. onPlay 콜백을 호출하여 플레이를 시작
+            onPlay(quest.questId);
+        } catch (error) {
+            console.error("플레이 시작 중 오류 발생:", error);
+            alert("플레이를 시작하는 중 문제가 발생했습니다. 다시 시도해 주세요.");
+        }
+    };
+
     return (
         <Overlay>
             <ModalContainer>
                 <Header>
                     <Title>퀘스트 정보</Title>
                 </Header>
-                <QuestImageWrapper>
-                    <QuestImage src={quest.imageUrl} alt="Quest Image" />
-                </QuestImageWrapper>
                 <QuestInfo>
                     <QuestName>{quest.questName}</QuestName>
                     <InfoItem>
@@ -42,7 +59,7 @@ const PlayModal = ({ quest, onClose, onPlay }) => {
                 </AnimationWrapper>
                 <ButtonContainer>
                     <CancelButton onClick={onClose}>취소</CancelButton>
-                    <PlayButton onClick={onPlay}>플레이</PlayButton>
+                    <PlayButton onClick={handlePlayClick}>플레이</PlayButton>
                 </ButtonContainer>
             </ModalContainer>
         </Overlay>
@@ -91,18 +108,6 @@ const Header = styled.div`
 const Title = styled.h3`
     font-size: 16px;
     font-weight: bold;
-`;
-
-const QuestImageWrapper = styled.div`
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 15px;
-`;
-
-const QuestImage = styled.img`
-    width: 50%;
-    border-radius: 10px;
 `;
 
 const QuestInfo = styled.div`

@@ -47,24 +47,13 @@ const PlayerMode = () => {
     }
   };
 
-  // 퀘스트 상세 정보 및 이미지 가져오기
+  // 퀘스트 상세 정보 가져오기 (이미지 제외)
   const fetchQuestDetail = async (questId) => {
     try {
-        // 퀘스트 상세 정보 가져오기
-        const response = await api.get(`/api/quests/${questId}`);
-        const questDetailData = response.data;
-
-        // 이미지 가져오기
-        const imageResponse = await api.get(`/api/quests/${questId}/image`, { responseType: 'blob' });
-        const imageUrl = URL.createObjectURL(imageResponse.data);
-
-        // 퀘스트 상세 정보와 이미지 URL 설정
-        setQuestDetail({
-            ...questDetailData,
-            imageUrl: imageUrl // blob URL 사용
-        });
+      const response = await api.get(`/api/play/${questId}/detail`);
+      setQuestDetail(response.data);
     } catch (error) {
-        console.error('Error fetching quest detail or image:', error);
+      console.error('Error fetching quest detail:', error);
     }
   };
 
@@ -79,11 +68,22 @@ const PlayerMode = () => {
   };
 
   const handlePlayQuest = () => {
+    // 플레이 시 현재 퀘스트 ID를 sessionStorage에 저장
+    sessionStorage.setItem('latestQuestId', selectedQuest.questId);
     navigate(`/play/${selectedQuest.questId}`);
   };
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
+  };
+
+  const handlePlayButtonClick = () => {
+    const latestQuestId = sessionStorage.getItem('latestQuestId');
+    if (latestQuestId) {
+      navigate(`/play/${latestQuestId}`);
+    } else {
+      alert("진행 중인 퀘스트가 없습니다.");
+    }
   };
 
   // 페이지당 퀘스트 리스트
@@ -171,7 +171,7 @@ const PlayerMode = () => {
             />
             <ButtonLabel>퀘스트 검색</ButtonLabel>
           </BottomButton>
-          <BottomButton onClick={() => navigate('/play')}>
+          <BottomButton onClick={handlePlayButtonClick}>
             <ButtonImage
               src={`${process.env.PUBLIC_URL}/play.png`}
             />
@@ -353,7 +353,6 @@ const PageButton = styled.button`
     color: #fff;
   }
 `;
-
 
 const StoryBox = styled.div`
   display: flex;

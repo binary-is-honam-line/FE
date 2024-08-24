@@ -20,6 +20,7 @@ import Stage from './Pages/Stage';
 import Ai from './Pages/Ai';
 import LocationSelector from './Pages/LocationSelector';
 import Album from './Pages/Album';
+import Play from './Pages/Play';
 
 const App = () => {
   const [places, setPlaces] = useState([]);
@@ -60,6 +61,9 @@ const App = () => {
         <Route path="/edit" element={<PrivateRoute element={<Edit />} />} />
         <Route path="/password-reset" element={<PrivateRoute element={<PasswordReset />} />} />
         <Route path="/album" element={<PrivateRoute element={<Album />} />} />
+
+        {/* questId를 파라미터로 받는 Play 라우트 */}
+        <Route path="/play/:questId" element={<PrivateRoute element={<Play />} />} /> {/* 새로운 Play 라우트 추가 */}
       </Routes>
     </Router>
   );
