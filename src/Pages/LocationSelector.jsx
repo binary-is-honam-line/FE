@@ -10,11 +10,11 @@ const locations = [
 ];
 
 const LocationSelector = ({ selectedLocation, setSelectedLocation, noBorder }) => {
-  const [tempLocation, setTempLocation] = useState(selectedLocation || ''); // 임시로 선택된 지역
+  const [tempLocation, setTempLocation] = useState(selectedLocation || ''); 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleLocationClick = (location) => {
-    setTempLocation(location); // 선택한 지역을 임시 변수에 저장
+    setTempLocation(location);
   };
 
   const openModal = () => {
@@ -26,8 +26,8 @@ const LocationSelector = ({ selectedLocation, setSelectedLocation, noBorder }) =
   };
 
   const handleSelect = () => {
-    setSelectedLocation(tempLocation); // 임시 저장된 지역을 최종 선택된 지역으로 저장
-    closeModal(); // 모달 닫기
+    setSelectedLocation(tempLocation);
+    closeModal();
   };
 
   return (
@@ -35,9 +35,9 @@ const LocationSelector = ({ selectedLocation, setSelectedLocation, noBorder }) =
       <InputBox 
         onClick={openModal} 
         readOnly 
-        value={selectedLocation || ' '} 
+        value={selectedLocation || ' '}
         placeholder="지역을 선택하세요." 
-        noBorder={noBorder} // 추가된 props
+        $noBorder={noBorder}
       />
       {isModalOpen && (
         <ModalOverlay onClick={closeModal}>
@@ -50,7 +50,7 @@ const LocationSelector = ({ selectedLocation, setSelectedLocation, noBorder }) =
                     <LocationButton 
                       key={colIndex} 
                       onClick={() => handleLocationClick(location)}
-                      isSelected={tempLocation === location} // 선택된 지역 스타일 적용
+                      $isSelected={tempLocation === location}
                     >
                       {location}
                     </LocationButton>
@@ -79,10 +79,10 @@ const InputBox = styled.input`
   width: 70%;
   padding: 5px;
   font-size: 12px;
-  border: ${({ noBorder }) => (noBorder ? 'none' : '1px solid #ccc')}; 
+  border: ${({ $noBorder }) => ($noBorder ? 'none' : '1px solid #ccc')}; 
   border-radius: 4px;
   cursor: pointer;
-  background-color: ${({ noBorder }) => (noBorder ? 'transparent' : '#fff')}; 
+  background-color: ${({ $noBorder }) => ($noBorder ? 'transparent' : '#fff')}; 
 `;
 
 const ModalOverlay = styled.div`
@@ -126,7 +126,7 @@ const Row = styled.div`
 const LocationButton = styled.button`
   flex: 1;
   padding: 10px;
-  background-color: ${({ isSelected }) => (isSelected ? '#A2CA71' : '#f0f0f0')};
+  background-color: ${({ $isSelected }) => ($isSelected ? '#A2CA71' : '#f0f0f0')}; 
   border: 1px solid #ccc;
   border-radius: 4px;
   cursor: pointer;
