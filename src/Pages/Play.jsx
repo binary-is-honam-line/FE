@@ -1,5 +1,5 @@
 /*global kakao*/
-import React, { useEffect, useCallback } from "react";
+import React, { useEffect, useCallback, useState } from "react";
 import styled from "styled-components";
 import { useNavigate, useParams } from 'react-router-dom';
 import api from './Api';
@@ -7,6 +7,9 @@ import api from './Api';
 const Play = () => {
     const { questId } = useParams();
     const navigate = useNavigate();
+    const [mapInstance, setMapInstance] = useState(null);
+    const [marker, setMarker] = useState(null);
+    const [circle, setCircle] = useState(null);
 
     const loadStages = useCallback((questId, mapInstance) => {
         api.get(`/api/play/${questId}/points`)
@@ -30,14 +33,18 @@ const Play = () => {
             kakao.maps.load(() => {
                 const container = document.getElementById("Mymap");
                 const options = {
-                center: new kakao.maps.LatLng(35.1595454, 126.8526012), // 기본 위치 설정
-                level: 3,
+                    center: new kakao.maps.LatLng(35.1595454, 126.8526012), // 기본 위치 설정
+                    level: 3,
                 };
                 const mapInstance = new kakao.maps.Map(container, options);
+                setMapInstance(mapInstance);
+
+                // 현재 위치를 표시하기
+                updateCurrentLocation(mapInstance);
 
                 // 퀘스트 스테이지를 불러옵니다.
                 if (questId) {
-                loadStages(questId, mapInstance);
+                    loadStages(questId, mapInstance);
                 }
             });
         };
@@ -46,6 +53,49 @@ const Play = () => {
             document.head.removeChild(script);
         };
     }, [questId, loadStages]);
+
+    const updateCurrentLocation = (mapInstance) => {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition((position) => {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                const locPosition = new kakao.maps.LatLng(lat, lng);
+
+                if (marker) {
+                    marker.setPosition(locPosition);
+                } else {
+                    const newMarker = new kakao.maps.Marker({
+                        map: mapInstance,
+                        position: locPosition,
+                        zIndex: 100,
+                    });
+                    setMarker(newMarker);
+                }
+
+                if (circle) {
+                    circle.setMap(null); // 기존의 원을 제거하고 새로운 위치로 설정
+                }
+
+                const newCircle = new kakao.maps.Circle({
+                    center: locPosition,
+                    radius: 500, // 반경
+                    strokeWeight: 5,
+                    strokeColor: '#004c80',
+                    strokeOpacity: 0.7,
+                    strokeStyle: 'solid',
+                    fillColor: '#0066ff',
+                    fillOpacity: 0.4,
+                });
+
+                newCircle.setMap(mapInstance);
+                setCircle(newCircle);
+
+                mapInstance.setCenter(locPosition);
+            }, (error) => {
+                console.error("현재 위치를 가져오는데 실패했습니다.", error);
+            });
+        }
+    };
 
     const displayStagesOnMap = (stages, mapInstance) => {
         const bounds = new kakao.maps.LatLngBounds();
@@ -93,6 +143,9 @@ const Play = () => {
             <BackgroundImageRight />
             <MapContainer>
                 <MapContents id="Mymap"></MapContents>
+                <RefreshButton onClick={() => updateCurrentLocation(mapInstance)}>
+                    <RefreshIcon src={`${process.env.PUBLIC_URL}/refresh.png`} alt="Refresh" />
+                </RefreshButton>
             </MapContainer>
 
             <BottomBar>
@@ -167,6 +220,28 @@ const MapContents = styled.div`
     position: absolute;
     top: 0;
     left: 0;
+`;
+
+const RefreshButton = styled.button`
+    position: absolute;
+    bottom: 100px;
+    left: 20px;
+    background-color: #A2CA71;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+    z-index: 1001;
+`;
+
+const RefreshIcon = styled.img`
+    width: 24px;
+    height: 24px;
 `;
 
 const BottomBar = styled.div`
