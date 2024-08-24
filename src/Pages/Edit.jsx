@@ -5,6 +5,7 @@ import api from './Api';
 
 const Edit = () => {
     const navigate = useNavigate();
+    const [latestQuestId, setLatestQuestId] = useState(null);
 
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -14,6 +15,12 @@ const Edit = () => {
     const [modalMessage, setModalMessage] = useState('');
 
     useEffect(() => {
+        // sessionStorage에서 최근에 플레이한 questId를 가져오기
+        const storedQuestId = sessionStorage.getItem('latestQuestId');
+        if (storedQuestId) {
+            setLatestQuestId(storedQuestId);
+        }
+
         // API 호출로 유저 데이터를 가져옴
         api.get('/api/user/info')
             .then(response => {
@@ -52,6 +59,14 @@ const Edit = () => {
             setModalMessage('정보 저장에 실패했습니다. 다시 시도해주세요.');
             setShowModal(true);
         });
+    };
+
+    const handlePlayClick = () => {
+        if (latestQuestId) {
+            navigate(`/play/${latestQuestId}`);
+        } else {
+            alert("진행 중인 퀘스트가 없습니다.");
+        }
     };
 
     return (
@@ -106,7 +121,7 @@ const Edit = () => {
                         />
                         <ButtonLabelBottom>퀘스트 검색</ButtonLabelBottom>
                     </BottomButton>
-                    <BottomButton onClick={() => navigate('/play')}>
+                    <BottomButton onClick={handlePlayClick}>
                         <ButtonImageBottom
                             src={`${process.env.PUBLIC_URL}/play.png`}
                         />
@@ -117,6 +132,10 @@ const Edit = () => {
                             src={`${process.env.PUBLIC_URL}/mypage.png`}
                         />
                         <ButtonLabelBottom>마이페이지</ButtonLabelBottom>
+                    </BottomButton>
+                    <BottomButton onClick={() => navigate('/select')}>
+                        <ButtonImageBottom src={`${process.env.PUBLIC_URL}/mode.png`} />
+                        <ButtonLabelBottom>모드선택</ButtonLabelBottom>
                     </BottomButton>
                 </BottomBar>
             </AppWrapper>
