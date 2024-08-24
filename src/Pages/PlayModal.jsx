@@ -1,8 +1,26 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import styled, { keyframes } from 'styled-components';
 import api from './Api';
 
 const PlayModal = ({ quest, onClose, onPlay }) => {
+    const [questImage, setQuestImage] = useState(null);
+
+    useEffect(() => {
+        const fetchQuestImage = async () => {
+            try {
+                const response = await api.get(`/api/play/${quest.questId}/image`, {
+                    responseType: 'blob',
+                });
+                const imageUrl = URL.createObjectURL(response.data);
+                setQuestImage(imageUrl);
+            } catch (error) {
+                console.error("퀘스트 이미지를 불러오는 중 오류 발생:", error);
+            }
+        };
+
+        fetchQuestImage();
+    }, [quest.questId]);
+
     const handlePlayClick = async () => {
         try {
             // 1. 좌표 목록을 확인하여 userStageId가 존재하는지 확인
@@ -29,6 +47,7 @@ const PlayModal = ({ quest, onClose, onPlay }) => {
                     <Title>퀘스트 정보</Title>
                 </Header>
                 <QuestInfo>
+                    {questImage && <QuestImage src={questImage} alt="Quest Image" />}
                     <QuestName>{quest.questName}</QuestName>
                     <InfoItem>
                         <InfoIcon src={`${process.env.PUBLIC_URL}/location.png`} alt="Location Icon" />
@@ -94,10 +113,12 @@ const ModalContainer = styled.div`
     border-radius: 15px;
     width: calc(100% - 40px);
     max-width: 335px;
+    max-height: 80vh;
     box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
     text-align: left;
     position: relative;
     z-index: 1001;
+    overflow-y: auto;
 `;
 
 const Header = styled.div`
@@ -119,6 +140,14 @@ const QuestName = styled.h2`
     margin-bottom: 10px;
     font-weight: bold;
 `;
+
+const QuestImage = styled.img`
+    width: 50%;
+    margin: 0 auto 10px auto;
+    display: block;
+    border-radius: 10px;
+`;
+
 
 const InfoItem = styled.div`
     display: flex;
