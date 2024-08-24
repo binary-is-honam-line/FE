@@ -5,62 +5,66 @@ import LocationSelector from './LocationSelector';
 import PlayModal from './PlayModal';
 import api from './Api';
 
+const PAGE_SIZE = 5; // 페이지당 퀘스트 수
+
 const PlayerMode = () => {
   const [keyword, setKeyword] = useState("");
   const [selectedLocation, setSelectedLocation] = useState('');
-  const [isSearchClicked, setIsSearchClicked] = useState(false);
   const [quests, setQuests] = useState([]);
   const [selectedQuest, setSelectedQuest] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1); // 현재 페이지 상태
 
   const navigate = useNavigate();
 
-  // API 호출을 통해 추천 퀘스트 5개를 가져오기
+  // 초기 랜덤 퀘스트 5개 가져오기
   useEffect(() => {
-    const fetchQuests = async () => {
+    const fetchInitialQuests = async () => {
       try {
         const response = await api.get('/api/search/suggest');
         setQuests(response.data);
       } catch (error) {
-        if (error.response) {
-          console.error(`에러가 발생했습니다: ${error.response.status} - ${error.response.data}`);
-        } else if (error.request) {
-          console.error('요청을 보냈지만 응답이 없습니다.');
-        } else {
-          console.error('요청 설정 중 에러가 발생했습니다:', error.message);
-        }
+        console.error('Error fetching initial quests:', error);
       }
     };
 
-    fetchQuests();
+    fetchInitialQuests();
   }, []);
 
-  const searchQuests = () => {
-    setIsSearchClicked(true);
+  // 검색 퀘스트 가져오기 (전체 목록)
+  const searchQuests = async () => {
+    try {
+      const response = await api.get('/api/search/', {
+        params: {
+          keyword: keyword || '',  // 키워드가 없을 경우 빈 문자열로 처리
+          location: selectedLocation || '',  // 지역이 선택되지 않으면 빈 문자열로 처리
+        },
+      });
+      setQuests(response.data);
+      setCurrentPage(1); // 검색 시 첫 페이지로 이동
+    } catch (error) {
+      console.error('Error searching quests:', error);
+    }
   };
 
-  const filteredQuests = quests.filter(quest => {
-    if (selectedLocation && keyword) {
-      return quest.location === selectedLocation && quest.questName.includes(keyword);
-    } else if (selectedLocation) {
-      return quest.location === selectedLocation;
-    } else if (keyword) {
-      return quest.questName.includes(keyword);
-    } else {
-      return true;
-    }
-  });
-
   const handlePlayClick = (quest) => {
-    setSelectedQuest(quest); // 선택된 퀘스트 설정
+    setSelectedQuest(quest);
   };
 
   const handleCloseModal = () => {
-    setSelectedQuest(null); // 모달 닫기
+    setSelectedQuest(null);
   };
 
   const handlePlayQuest = () => {
-    navigate(`/play/${selectedQuest.questId}`); // 퀘스트 플레이 화면으로 이동
+    navigate(`/play/${selectedQuest.questId}`);
   };
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  // 페이지당 퀘스트 리스트
+  const paginatedQuests = quests.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const totalPages = Math.ceil(quests.length / PAGE_SIZE);
 
   return (
     <Container>
@@ -82,7 +86,7 @@ const PlayerMode = () => {
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
             />
-            <SearchButton onClick={searchQuests} isClicked={isSearchClicked}>
+            <SearchButton onClick={searchQuests}>
               <SearchIcon src={`${process.env.PUBLIC_URL}/search.png`} alt="Search" />
             </SearchButton>
           </SearchBarWrapper>
@@ -90,7 +94,7 @@ const PlayerMode = () => {
 
         <ScrollableContent>
           <StoryList>
-            {filteredQuests.map((quest) => (
+            {paginatedQuests.map((quest) => (
               <StoryBox key={quest.questId}>
                 <StoryContent>
                   <StoryInfo>
@@ -119,6 +123,22 @@ const PlayerMode = () => {
             ))}
           </StoryList>
         </ScrollableContent>
+
+        <PaginationWrapper>
+          {totalPages > 1 && (
+            <Pagination>
+              {Array.from({ length: totalPages }, (_, index) => (
+                <PageButton
+                  key={index}
+                  onClick={() => handlePageChange(index + 1)}
+                  active={index + 1 === currentPage}
+                >
+                  {index + 1}
+                </PageButton>
+              ))}
+            </Pagination>
+          )}
+        </PaginationWrapper>
 
         <BottomBar>
           <BottomButton onClick={() => navigate('/player')}>
@@ -201,7 +221,6 @@ const AppWrapper = styled.div`
   position: relative;
 `;
 
-
 const FixedHeader = styled.div`
   width: 100%;
   background-color: #FEFEFE;
@@ -270,16 +289,45 @@ const ScrollableContent = styled.div`
   width: 100%;
   display: flex;
   justify-content: center;
-  max-height: calc(100vh - 25%);
+  max-height: calc(100vh - 35%);
 `;
-
-
 
 const StoryList = styled.div`
   width: 80%;
   display: flex;
   flex-direction: column;
   gap: 20px;
+`;
+
+const PaginationWrapper = styled.div`
+  position: fixed;
+  bottom: 80px;
+  width: 100%;
+  max-width: 375px;
+  display: flex;
+  justify-content: center;
+  background-color: #FEFEFE;
+`;
+
+const Pagination = styled.div`
+  display: flex;
+  justify-content: center;
+  padding: 10px 0;
+`;
+
+const PageButton = styled.button`
+  padding: 8px 12px;
+  margin: 0 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: ${({ active }) => (active ? '#A2CA71' : '#fff')};
+  color: ${({ active }) => (active ? '#fff' : '#333')};
+  cursor: pointer;
+
+  &:hover {
+    background-color: #A2CA71;
+    color: #fff;
+  }
 `;
 
 const StoryBox = styled.div`
