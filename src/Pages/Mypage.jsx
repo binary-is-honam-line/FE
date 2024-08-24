@@ -1,10 +1,19 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import api from './Api';
 
 const Mypage = () => {
   const navigate = useNavigate();
+  const [latestQuestId, setLatestQuestId] = useState(null);
+
+  useEffect(() => {
+    // sessionStorage에서 최근에 플레이한 questId를 가져오기
+    const storedQuestId = sessionStorage.getItem('latestQuestId');
+    if (storedQuestId) {
+      setLatestQuestId(storedQuestId);
+    }
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -15,6 +24,14 @@ const Mypage = () => {
       navigate('/login'); // 즉시 로그인 페이지로 이동
     } catch (error) {
       console.error('로그아웃 에러:', error);
+    }
+  };
+
+  const handlePlayClick = () => {
+    if (latestQuestId) {
+      navigate(`/play/${latestQuestId}`);
+    } else {
+      alert("진행 중인 퀘스트가 없습니다.");
     }
   };
 
@@ -53,7 +70,7 @@ const Mypage = () => {
             />
             <ButtonLabelBottom>퀘스트 검색</ButtonLabelBottom>
           </BottomButton>
-          <BottomButton onClick={() => navigate('/play')}>
+          <BottomButton onClick={handlePlayClick}>
             <ButtonImageBottom
               src={`${process.env.PUBLIC_URL}/play.png`}
             />
