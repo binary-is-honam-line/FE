@@ -1,37 +1,38 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useNavigate } from 'react-router-dom';
 import LocationSelector from './LocationSelector';
 import PlayModal from './PlayModal';
+import api from './Api';
 
 const PlayerMode = () => {
   const [keyword, setKeyword] = useState("");
   const [selectedLocation, setSelectedLocation] = useState('');
   const [isSearchClicked, setIsSearchClicked] = useState(false);
-  const [quests, setQuests] = useState([
-    {
-      questId: 1,
-      questName: "광주 맛집 여행",
-      location: "광주",
-      nickname: "배고픈담곰이",
-      headCount: "4",
-      time: "02:00:00",
-      imageUrl: "/monkey.png",
-    },
-    {
-      questId: 2,
-      questName: "목포 맛집 여정",
-      location: "목포",
-      nickname: "집에가고싶은농곰",
-      headCount: "3",
-      time: "01:30:00",
-      imageUrl: "/monkeys.png",
-    },
-  ]);
-
-  const [selectedQuest, setSelectedQuest] = useState(null); // 선택된 퀘스트 상태
+  const [quests, setQuests] = useState([]);
+  const [selectedQuest, setSelectedQuest] = useState(null);
 
   const navigate = useNavigate();
+
+  // API 호출을 통해 추천 퀘스트 5개를 가져오기
+  useEffect(() => {
+    const fetchQuests = async () => {
+      try {
+        const response = await api.get('/api/search/suggest');
+        setQuests(response.data);
+      } catch (error) {
+        if (error.response) {
+          console.error(`에러가 발생했습니다: ${error.response.status} - ${error.response.data}`);
+        } else if (error.request) {
+          console.error('요청을 보냈지만 응답이 없습니다.');
+        } else {
+          console.error('요청 설정 중 에러가 발생했습니다:', error.message);
+        }
+      }
+    };
+
+    fetchQuests();
+  }, []);
 
   const searchQuests = () => {
     setIsSearchClicked(true);
@@ -66,54 +67,58 @@ const PlayerMode = () => {
       <BackgroundImageLeft />
       <BackgroundImageRight />
       <AppWrapper>
-        <SearchBarWrapper>
-          <LocationContainer>
-            <LocationSelector 
-              selectedLocation={selectedLocation}
-              setSelectedLocation={setSelectedLocation}
-              noBorder={true}
+        <FixedHeader>
+          <SearchBarWrapper>
+            <LocationContainer>
+              <LocationSelector 
+                selectedLocation={selectedLocation}
+                setSelectedLocation={setSelectedLocation}
+                noBorder={true}
+              />
+            </LocationContainer>
+            <SearchInput
+              type="text"
+              placeholder="퀘스트 키워드 검색"
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
             />
-          </LocationContainer>
-          <SearchInput
-            type="text"
-            placeholder="퀘스트 키워드 검색"
-            value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
-          />
-          <SearchButton onClick={searchQuests} isClicked={isSearchClicked}>
-            <SearchIcon src={`${process.env.PUBLIC_URL}/search.png`} alt="Search" />
-          </SearchButton>
-        </SearchBarWrapper>
+            <SearchButton onClick={searchQuests} isClicked={isSearchClicked}>
+              <SearchIcon src={`${process.env.PUBLIC_URL}/search.png`} alt="Search" />
+            </SearchButton>
+          </SearchBarWrapper>
+        </FixedHeader>
 
-        <StoryList>
-          {filteredQuests.map((quest) => (
-            <StoryBox key={quest.questId}>
-              <StoryContent>
-                <StoryInfo>
-                  <StoryTitle>{quest.questName}</StoryTitle>
-                  <StoryLocation>
-                    <StoryImageIcon src="/location.png" alt="Location" />
-                    {quest.location}
-                  </StoryLocation>
-                  <StoryAuthor>
-                    <StoryImageIcon src="/user.png" alt="User" />
-                    {quest.nickname}
-                  </StoryAuthor>
-                  <StoryCount>
-                    <StoryImageIcon src="/count.png" alt="Head Count" />
-                    적정 인원: {quest.headCount}명
-                  </StoryCount>
-                  <StoryTime>
-                    <StoryImageIcon src="/time.png" alt="Time" />
-                    예상 시간: {quest.time}
-                  </StoryTime>
-                </StoryInfo>
-                <StoryImage src={quest.imageUrl} alt="Quest" />
-              </StoryContent>
-              <PlayButton onClick={() => handlePlayClick(quest)}>플레이 하기</PlayButton>
-            </StoryBox>
-          ))}
-        </StoryList>
+        <ScrollableContent>
+          <StoryList>
+            {filteredQuests.map((quest) => (
+              <StoryBox key={quest.questId}>
+                <StoryContent>
+                  <StoryInfo>
+                    <StoryTitle>{quest.questName}</StoryTitle>
+                    <StoryLocation>
+                      <StoryImageIcon src="/location.png" alt="Location" />
+                      {quest.location}
+                    </StoryLocation>
+                    <StoryAuthor>
+                      <StoryImageIcon src="/user.png" alt="User" />
+                      {quest.userNickname}
+                    </StoryAuthor>
+                    <StoryCount>
+                      <StoryImageIcon src="/count.png" alt="Head Count" />
+                      적정 인원: {quest.headCount}명
+                    </StoryCount>
+                    <StoryTime>
+                      <StoryImageIcon src="/time.png" alt="Time" />
+                      예상 시간: {quest.time}
+                    </StoryTime>
+                  </StoryInfo>
+                  <StoryImage src={quest.imageUrl || '/defaultImage.png'} alt="Quest" />
+                </StoryContent>
+                <PlayButton onClick={() => handlePlayClick(quest)}>플레이 하기</PlayButton>
+              </StoryBox>
+            ))}
+          </StoryList>
+        </ScrollableContent>
 
         <BottomBar>
           <BottomButton onClick={() => navigate('/player')}>
@@ -152,8 +157,6 @@ const PlayerMode = () => {
   );
 };
 
-// 스타일링
-
 const Container = styled.div`
   display: flex;
   justify-content: center;
@@ -191,15 +194,19 @@ const BackgroundImageRight = styled.div`
 const AppWrapper = styled.div`
   width: 100%;
   max-width: 375px;
-  height: 100vh;
+  height: 100%;
   background-color: #FEFEFE;
-  padding: 0;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
   position: relative;
-  z-index: 1;
+`;
+
+
+const FixedHeader = styled.div`
+  width: 100%;
+  background-color: #FEFEFE;
+  z-index: 2;
+  position: relative;
 `;
 
 const SearchBarWrapper = styled.div`
@@ -208,7 +215,7 @@ const SearchBarWrapper = styled.div`
   align-items: center;
   width: 80%;
   height: 50px;
-  margin-top: 20px;
+  margin: 20px auto;
   border-radius: 15px;
   overflow: hidden;
   border: 2px solid #A2CA71;
@@ -228,7 +235,8 @@ const LocationContainer = styled.div`
 
 const SearchInput = styled.input`
   flex: 2.5;
-  padding: 10px;
+  padding: 0 10px;
+  height: 100%;
   border: none;
   outline: none;
   font-size: 16px;
@@ -256,10 +264,19 @@ const SearchIcon = styled.img`
   background-color: transparent;
 `;
 
-const StoryList = styled.div`
+const ScrollableContent = styled.div`
   flex-grow: 1;
   overflow-y: auto;
-  width: 90%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  max-height: calc(100vh - 25%);
+`;
+
+
+
+const StoryList = styled.div`
+  width: 80%;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -354,12 +371,15 @@ const PlayButton = styled.button`
 
 const BottomBar = styled.div`
   width: 100%;
+  max-width: 375px;
   height: 80px;
   display: flex;
   justify-content: space-around;
   align-items: center;
   background-color: #A2CA71;
   box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+  position: fixed;
+  bottom: 0;
 `;
 
 const BottomButton = styled.button`
