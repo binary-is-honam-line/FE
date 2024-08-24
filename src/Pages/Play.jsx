@@ -10,91 +10,144 @@ const Play = () => {
     const [mapInstance, setMapInstance] = useState(null);
     const [marker, setMarker] = useState(null);
     const [circle, setCircle] = useState(null);
+    const [currentPosition, setCurrentPosition] = useState(null);
+    const [modalIsOpen, setModalIsOpen] = useState(false);
+    const [currentStage, setCurrentStage] = useState(null);
+    const [quizAnswer, setQuizAnswer] = useState('');
+    const [questClearedCount, setQuestClearedCount] = useState(0);
+    const [showClearModal, setShowClearModal] = useState(false);
+    const [showStarModal, setShowStarModal] = useState(false);
 
     const loadStages = useCallback((questId, mapInstance) => {
         api.get(`/api/play/${questId}/points`)
-        .then(response => {
-            const stages = response.data;
-            displayStagesOnMap(stages, mapInstance);
-        })
-        .catch(error => {
-            console.error("스테이지를 불러오는데 실패했습니다.", error);
-        });
+            .then(response => {
+                const stages = response.data;
+                displayStagesOnMap(stages, mapInstance);
+            })
+            .catch(error => {
+                console.error("스테이지를 불러오는데 실패했습니다.", error);
+            });
     }, []);
 
     useEffect(() => {
-        // Kakao 지도 API를 로드합니다.
-        const script = document.createElement("script");
-        script.async = true;
-        script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.REACT_APP_KAKAO_API_KEY}&autoload=false&libraries=services`;
-        document.head.appendChild(script);
-
-        script.onload = () => {
+        const loadMap = () => {
             kakao.maps.load(() => {
                 const container = document.getElementById("Mymap");
                 const options = {
-                    center: new kakao.maps.LatLng(35.1595454, 126.8526012), // 기본 위치 설정
+                    center: new kakao.maps.LatLng(35.1595454, 126.8526012),
                     level: 3,
                 };
                 const mapInstance = new kakao.maps.Map(container, options);
                 setMapInstance(mapInstance);
 
-                // 현재 위치를 표시하기
+                // 맵이 로드된 후에 위치 정보를 업데이트
                 updateCurrentLocation(mapInstance);
 
-                // 퀘스트 스테이지를 불러옵니다.
                 if (questId) {
                     loadStages(questId, mapInstance);
                 }
             });
         };
 
+        const script = document.createElement("script");
+        script.async = true;
+        script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.REACT_APP_KAKAO_API_KEY}&autoload=false&libraries=services`;
+        document.head.appendChild(script);
+
+        script.onload = loadMap;
+
         return () => {
             document.head.removeChild(script);
         };
     }, [questId, loadStages]);
 
-    const updateCurrentLocation = (mapInstance) => {
+    const updateCurrentLocation = useCallback((mapInstance, retryCount = 5) => {
         if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition((position) => {
-                const lat = position.coords.latitude;
-                const lng = position.coords.longitude;
-                const locPosition = new kakao.maps.LatLng(lat, lng);
-
-                if (marker) {
-                    marker.setPosition(locPosition);
-                } else {
-                    const newMarker = new kakao.maps.Marker({
-                        map: mapInstance,
-                        position: locPosition,
-                        zIndex: 100,
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    
+                    // 현재 위치 좌표를 콘솔에 출력
+                    console.log(`현재 위치 - 위도: ${lat}, 경도: ${lng}`);
+                    
+                    const locPosition = new kakao.maps.LatLng(lat, lng);
+                    setCurrentPosition(locPosition);
+    
+                    if (marker) {
+                        marker.setPosition(locPosition);
+                    } else {
+                        const newMarker = new kakao.maps.Marker({
+                            map: mapInstance,
+                            position: locPosition,
+                            zIndex: 100,
+                        });
+                        setMarker(newMarker);
+                    }
+    
+                    if (circle) {
+                        circle.setMap(null);
+                    }
+    
+                    const newCircle = new kakao.maps.Circle({
+                        center: locPosition,
+                        radius: 500,
+                        strokeWeight: 5,
+                        strokeColor: '#004c80',
+                        strokeOpacity: 0.7,
+                        strokeStyle: 'solid',
+                        fillColor: '#0066ff',
+                        fillOpacity: 0.4,
                     });
-                    setMarker(newMarker);
-                }
-
-                if (circle) {
-                    circle.setMap(null); // 기존의 원을 제거하고 새로운 위치로 설정
-                }
-
-                const newCircle = new kakao.maps.Circle({
-                    center: locPosition,
-                    radius: 500, // 반경
-                    strokeWeight: 5,
-                    strokeColor: '#004c80',
-                    strokeOpacity: 0.7,
-                    strokeStyle: 'solid',
-                    fillColor: '#0066ff',
-                    fillOpacity: 0.4,
-                });
-
-                newCircle.setMap(mapInstance);
-                setCircle(newCircle);
-
-                mapInstance.setCenter(locPosition);
-            }, (error) => {
-                console.error("현재 위치를 가져오는데 실패했습니다.", error);
-            });
+    
+                    newCircle.setMap(mapInstance);
+                    setCircle(newCircle);
+    
+                    mapInstance.setCenter(locPosition);
+                },
+                (error) => {
+                    console.error("Geolocation error:", error);
+                    if (retryCount > 0) {
+                        setTimeout(() => updateCurrentLocation(mapInstance, retryCount - 1), 3000);
+                    } else {
+                        alert('현재 위치를 가져올 수 없습니다. 기본 위치로 설정합니다.');
+                        setFallbackLocation(mapInstance);
+                    }
+                },
+                { timeout: 20000 }
+            );
+        } else {
+            alert("지오로케이션이 지원되지 않는 브라우저입니다.");
+            setFallbackLocation(mapInstance);
         }
+    }, [marker, circle]);
+
+    const setFallbackLocation = (mapInstance) => {
+        const defaultPosition = new kakao.maps.LatLng(35.1595454, 126.8526012);
+        setCurrentPosition(defaultPosition);
+
+        const newMarker = new kakao.maps.Marker({
+            map: mapInstance,
+            position: defaultPosition,
+            zIndex: 100,
+        });
+        setMarker(newMarker);
+
+        const newCircle = new kakao.maps.Circle({
+            center: defaultPosition,
+            radius: 500,
+            strokeWeight: 5,
+            strokeColor: '#004c80',
+            strokeOpacity: 0.7,
+            strokeStyle: 'solid',
+            fillColor: '#0066ff',
+            fillOpacity: 0.4,
+        });
+
+        newCircle.setMap(mapInstance);
+        setCircle(newCircle);
+
+        mapInstance.setCenter(defaultPosition);
     };
 
     const displayStagesOnMap = (stages, mapInstance) => {
@@ -108,16 +161,25 @@ const Play = () => {
             }
 
             const position = new kakao.maps.LatLng(stage.lat, stage.lng);
-            const imageSrc = `${process.env.PUBLIC_URL}/monkey${stage.sequenceNumber}.png`; // 이미지 경로 설정
+            
+            // 클리어된 스테이지는 treasure.png를, 그렇지 않은 스테이지는 monkey.png를 사용
+            const imageSrc = stage.cleared
+                ? `${process.env.PUBLIC_URL}/treasure.png`
+                : `${process.env.PUBLIC_URL}/monkey${stage.sequenceNumber}.png`;
+            
             const imageSize = new kakao.maps.Size(50, 50);
-            const imageOption = { offset: new kakao.maps.Point(25, 25) }; // 마커의 기준점을 이미지의 중심으로 설정
+            const imageOption = { offset: new kakao.maps.Point(25, 25) };
             const markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize, imageOption);
 
-            new kakao.maps.Marker({
+            // 마커 생성 및 맵에 추가
+            const stageMarker = new kakao.maps.Marker({
                 position,
                 map: mapInstance,
                 image: markerImage,
             });
+
+            // 마커 클릭 이벤트 등록
+            kakao.maps.event.addListener(stageMarker, 'click', () => handleMarkerClick(stage));
 
             linePath.push(position);
             bounds.extend(position);
@@ -137,6 +199,131 @@ const Play = () => {
         }
     };
 
+    const handleMarkerClick = (stage) => {
+        // 현재 위치가 null인지 다시 확인
+        if (!currentPosition) {
+            console.error("현재 위치가 설정되지 않았습니다. 위치 확인 중입니다.");
+            alert("현재 위치를 확인할 수 없습니다. 잠시 후 다시 시도해주세요.");
+            return;
+        }
+    
+        // 클릭한 마커와 현재 위치 간의 거리 계산
+        const distance = calculateDistance(currentPosition, new kakao.maps.LatLng(stage.lat, stage.lng));
+        if (distance > 500) {
+            alert("아직 스테이지 근처에 위치하지 않았습니다.");
+            return;
+        }
+    
+        // 현재 위치와 함께 API 요청
+        api.get(`/api/play/${questId}/${stage.userStageId}`, {
+            params: {
+                lat: currentPosition.getLat(),
+                lng: currentPosition.getLng()
+            }
+        })
+        .then(response => {
+            setCurrentStage(response.data);
+            setModalIsOpen(true);
+        })
+        .catch(error => {
+            if (error.response && error.response.status === 403) {
+                alert("아직 스테이지 근처에 위치하지 않았습니다.");
+            } else {
+                console.error("퀴즈를 불러오는데 실패했습니다.", error);
+            }
+        });
+    };
+
+    const calculateDistance = (position1, position2) => {
+        if (!position1 || !position2) {
+            return Infinity;
+        }
+
+        const lat1 = position1.getLat();
+        const lng1 = position1.getLng();
+        const lat2 = position2.getLat();
+        const lng2 = position2.getLng();
+
+        const R = 6371e3; // 지구 반지름 (미터)
+        const φ1 = lat1 * Math.PI / 180;
+        const φ2 = lat2 * Math.PI / 180;
+        const Δφ = (lat2 - lat1) * Math.PI / 180;
+        const Δλ = (lng2 - lng1) * Math.PI / 180;
+
+        const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+                  Math.cos(φ1) * Math.cos(φ2) *
+                  Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+        const distance = R * c; // in meters
+        return distance;
+    };
+
+    const handleQuizSubmit = () => {
+        api.post(`/api/play/${questId}/${currentStage.userStageId}`, { answer: quizAnswer })
+            .then(response => {
+                if (response.data === "스테이지를 클리어했습니다!") {
+                    alert("정답입니다! 스테이지를 클리어했습니다.");
+                    setModalIsOpen(false);
+                    checkQuestCompletion(); // 퀘스트 클리어 여부 확인
+                } else {
+                    alert("틀렸습니다. 다시 풀어보세요.");
+                }
+            })
+            .catch(error => {
+                if (error.response && error.response.status === 403) {
+                    alert("틀렸습니다. 다시 풀어보세요.");
+                } else {
+                    console.error("퀴즈 제출에 실패했습니다.", error);
+                    alert("퀴즈 제출 중 오류가 발생했습니다. 다시 시도해주세요.");
+                }
+            });
+    };
+
+    const checkQuestCompletion = () => {
+        // 클리어한 퀘스트 갯수를 조회
+        api.get('/api/clear/quest-album/count')
+            .then(response => {
+                const clearedCount = response.data;
+                setQuestClearedCount(clearedCount);
+                if (clearedCount >= 1) { // 1개 이상 클리어한 경우
+                    setShowClearModal(true);
+                }
+                if (clearedCount >= 1 && [1, 5, 10, 20, 30].includes(clearedCount)) { 
+                    // 해당 갯수에 도달한 경우 스타 모달도 보여줌
+                    setShowStarModal(true);
+                }
+            })
+            .catch(error => {
+                console.error("클리어한 퀘스트 갯수를 가져오는데 실패했습니다.", error);
+            });
+    };
+
+    const handleEndPlay = () => {
+        api.post(`/api/play/${questId}/end`)
+            .then(() => {
+                alert("플레이가 종료되었습니다.");
+                navigate('/'); // 플레이 종료 후 홈으로 이동
+            })
+            .catch(error => {
+                console.error("플레이 종료에 실패했습니다.", error);
+            });
+    };
+
+    const getStarImage = () => {
+        if (questClearedCount >= 30) {
+            return `${process.env.PUBLIC_URL}/star5.png`;
+        } else if (questClearedCount >= 20) {
+            return `${process.env.PUBLIC_URL}/star4.png`;
+        } else if (questClearedCount >= 10) {
+            return `${process.env.PUBLIC_URL}/star3.png`;
+        } else if (questClearedCount >= 5) {
+            return `${process.env.PUBLIC_URL}/star2.png`;
+        } else {
+            return `${process.env.PUBLIC_URL}/star1.png`;
+        }
+    };
+
     return (
         <Container>
             <BackgroundImageLeft />
@@ -147,6 +334,80 @@ const Play = () => {
                     <RefreshIcon src={`${process.env.PUBLIC_URL}/refresh.png`} alt="Refresh" />
                 </RefreshButton>
             </MapContainer>
+
+            {modalIsOpen && (
+                <CustomModal>
+                    <ModalContent>
+                        <ModalTitle>{currentStage?.stageName}</ModalTitle>
+                        <ModalSection>
+                            <ModalLabel>주소:</ModalLabel>
+                            <ModalText>{currentStage?.stageAddress}</ModalText>
+                        </ModalSection>
+                        <ModalSection>
+                            <ModalLabel>스토리:</ModalLabel>
+                            <ModalText>{currentStage?.stageStory}</ModalText>
+                        </ModalSection>
+                        <ModalSection>
+                            <ModalLabel>퀴즈:</ModalLabel>
+                            <ModalText>Q. {currentStage?.quizContent}</ModalText>
+                        </ModalSection>
+                        <QuizOptions>
+                            <QuizButton 
+                                $active={quizAnswer === 'O'} 
+                                onClick={() => setQuizAnswer('O')}
+                            >
+                                O
+                            </QuizButton>
+                            <QuizButton 
+                                $active={quizAnswer === 'X'} 
+                                onClick={() => setQuizAnswer('X')}
+                            >
+                                X
+                            </QuizButton>
+                        </QuizOptions>
+                        <ModalButtons>
+                            <ModalButton onClick={handleQuizSubmit}>완료</ModalButton>
+                            <ModalButton onClick={() => setModalIsOpen(false)}>닫기</ModalButton>
+                        </ModalButtons>
+                    </ModalContent>
+                </CustomModal>
+            )}
+
+            {showClearModal && (
+                <CustomModal>
+                    <ModalContent>
+                        <ModalTitle>퀘스트 클리어!</ModalTitle>
+                        <ModalSection>
+                            <ModalText>
+                                원숭이가 모험가에 한 단계 더 나아갔습니다!<br />
+                                현재 클리어한 퀘스트의 수는 {questClearedCount}개입니다.
+                            </ModalText>
+                        </ModalSection>
+                        <ModalButtons>
+                            <ModalButton onClick={handleEndPlay}>완료</ModalButton>
+                        </ModalButtons>
+                    </ModalContent>
+                </CustomModal>
+            )}
+
+            {showStarModal && (
+                <CustomModal>
+                    <ModalContent>
+                        <ModalTitle>축하합니다!</ModalTitle>
+                        <ModalSection>
+                            <ModalText>
+                                특정 갯수의 퀘스트를 클리어하여 특별한 별을 획득했습니다!
+                            </ModalText>
+                        </ModalSection>
+                        <ModalSection>
+                            <ModalImage src={getStarImage()} alt="Star" />
+                        </ModalSection>
+                        <ModalButtons>
+                            <ModalButton onClick={handleEndPlay}>완료</ModalButton>
+                        </ModalButtons>
+                    </ModalContent>
+                </CustomModal>
+            )}
 
             <BottomBar>
                 <BottomButton onClick={() => navigate('/player')}>
@@ -242,6 +503,100 @@ const RefreshButton = styled.button`
 const RefreshIcon = styled.img`
     width: 24px;
     height: 24px;
+`;
+
+const CustomModal = styled.div`
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+`;
+
+const ModalContent = styled.div`
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
+`;
+
+const ModalTitle = styled.h2`
+    text-align: center;
+    margin-bottom: 20px;
+`;
+
+const ModalSection = styled.div`
+    margin-bottom: 15px;
+    text-align: center;
+`;
+
+const ModalLabel = styled.p`
+    font-weight: bold;
+    margin-bottom: 5px;
+`;
+
+const ModalText = styled.p`
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
+    text-align: center;
+`;
+
+const QuizOptions = styled.div`
+    display: flex;
+    justify-content: space-around;
+    margin: 20px 0;
+`;
+
+const QuizButton = styled.button`
+    background-color: ${props => props.$active ? '#99cc66' : '#f0f0f0'};
+    color: ${props => props.$active ? '#fff' : '#333'};
+    padding: 10px 20px;
+    font-size: 18px;
+    border: 1px solid #A2CA71;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100px;
+
+    &:hover {
+        background-color: #88bb55;
+        color: white;
+    }
+`;
+
+const ModalButtons = styled.div`
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+`;
+
+const ModalButton = styled.button`
+    background-color: #99cc66;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100px;
+
+    &:hover {
+        background-color: #88bb55;
+    }
+`;
+
+const ModalImage = styled.img`
+    width: 100px;
+    height: 100px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
 `;
 
 const BottomBar = styled.div`
