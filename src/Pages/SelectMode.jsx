@@ -70,7 +70,7 @@ const ModeButton = styled.button`
     }
 `;
 
-const TreeImage = styled.img`
+const TreasureImage = styled.img`
     position: absolute;
     bottom: 10px;
     left: 20px;
@@ -103,7 +103,7 @@ const SelectMode = () => {
                 <Logo src="/logo.png" alt="Logo" />
                 <ModeButton onClick={handleCreatorModeClick}>크리에이터 모드</ModeButton>
                 <ModeButton onClick={handlePlayerModeClick}>플레이어 모드</ModeButton>
-                <TreeImage src="/tree.png" alt="Tree" />
+                <TreasureImage src="/treasure.png" alt="Treasure" />
                 <MonkeyImage src="/monkeys.png" alt="Monkey" />
             </AppWrapper>
         </Container>
