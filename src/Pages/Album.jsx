@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 const Album = () => {
     const navigate = useNavigate();
+    const latestQuestId = sessionStorage.getItem('latestQuestId');
 
     // 하드코딩된 퀘스트 데이터
     const quests = [
@@ -35,6 +36,14 @@ const Album = () => {
 
     const handleNext = () => {
         setCurrentIndex((prevIndex) => (prevIndex < quests.length - 1 ? prevIndex + 1 : 0));
+    };
+
+    const handlePlayClick = () => {
+        if (latestQuestId) {
+            navigate(`/play/${latestQuestId}`);
+        } else {
+            alert("진행 중인 퀘스트가 없습니다.");
+        }
     };
 
     const currentQuest = quests[currentIndex];
@@ -85,7 +94,7 @@ const Album = () => {
                 />
                 <ButtonLabelBottom>퀘스트 검색</ButtonLabelBottom>
             </BottomButton>
-            <BottomButton onClick={() => navigate('/play')}>
+            <BottomButton onClick={handlePlayClick}>
                 <ButtonImageBottom
                     src={`${process.env.PUBLIC_URL}/play.png`}
                 />

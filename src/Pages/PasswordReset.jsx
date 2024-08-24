@@ -1,16 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import api from './Api';
 
 const PasswordReset = () => {
     const navigate = useNavigate();
+    const [latestQuestId, setLatestQuestId] = useState(null);
 
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [showModal, setShowModal] = useState(false);
     const [modalMessage, setModalMessage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
+
+    useEffect(() => {
+        // sessionStorage에서 최근에 플레이한 questId를 가져오기
+        const storedQuestId = sessionStorage.getItem('latestQuestId');
+        if (storedQuestId) {
+            setLatestQuestId(storedQuestId);
+        }
+    }, []);
 
     const handleSave = () => {
         setErrorMessage(''); // 에러 메시지 초기화
@@ -39,6 +48,14 @@ const PasswordReset = () => {
             console.error("비밀번호를 저장하는데 실패했습니다.", error);
             setErrorMessage('비밀번호 변경에 실패했습니다. 다시 시도해주세요.');
         });
+    };
+
+    const handlePlayClick = () => {
+        if (latestQuestId) {
+            navigate(`/play/${latestQuestId}`);
+        } else {
+            alert("진행 중인 퀘스트가 없습니다.");
+        }
     };
 
     return (
@@ -80,7 +97,7 @@ const PasswordReset = () => {
                         />
                         <ButtonLabelBottom>퀘스트 검색</ButtonLabelBottom>
                     </BottomButton>
-                    <BottomButton onClick={() => navigate('/play')}>
+                    <BottomButton onClick={handlePlayClick}>
                         <ButtonImageBottom
                             src={`${process.env.PUBLIC_URL}/play.png`}
                         />
@@ -91,6 +108,10 @@ const PasswordReset = () => {
                             src={`${process.env.PUBLIC_URL}/mypage.png`}
                         />
                         <ButtonLabelBottom>마이페이지</ButtonLabelBottom>
+                    </BottomButton>
+                    <BottomButton onClick={() => navigate('/select')}>
+                        <ButtonImageBottom src={`${process.env.PUBLIC_URL}/mode.png`} />
+                        <ButtonLabelBottom>모드선택</ButtonLabelBottom>
                     </BottomButton>
                 </BottomBar>
             </AppWrapper>
@@ -223,7 +244,7 @@ const SaveButton = styled.button`
 `;
 
 const BottomBar = styled.div`
-    width: 100%;  
+    width: 100%;
     max-width: 375px;
     height: 80px;
     display: flex;
