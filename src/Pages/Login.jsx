@@ -9,7 +9,7 @@ const Container = styled.div`
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    min-height: 100vh;
     position: relative;
     overflow: hidden;
 `;
@@ -18,7 +18,7 @@ const BackgroundImageLeft = styled.div`
     position: absolute;
     top: 0;
     left: 0;
-    width: calc(50% - 187.5px); /* 50%에서 AppWrapper의 절반을 뺀 값 */
+    width: calc(50% - 187.5px);
     height: 100%;
     background-image: url('/left.png');
     background-repeat: no-repeat;
@@ -30,7 +30,7 @@ const BackgroundImageRight = styled.div`
     position: absolute;
     top: 0;
     right: 0;
-    width: calc(50% - 187.5px); /* 50%에서 AppWrapper의 절반을 뺀 값 */
+    width: calc(50% - 187.5px);
     height: 100%;
     background-image: url('/right.png');
     background-repeat: no-repeat;
@@ -41,7 +41,7 @@ const BackgroundImageRight = styled.div`
 const AppWrapper = styled.div`
     width: 100%;
     max-width: 375px;
-    height: 100vh;
+    min-height: 100vh;
     background-color: #A2CA71;
     padding: 20px;
     display: flex;
@@ -49,6 +49,7 @@ const AppWrapper = styled.div`
     align-items: center;
     position: relative;
     z-index: 1;
+    overflow-y: auto;
 `;
 
 const Logo = styled.img`
@@ -165,15 +166,14 @@ const Login = () => {
                 },
             });
 
-            // 세션에 사용자 정보 저장
             sessionStorage.setItem('user', JSON.stringify(response.data.user));
 
-            console.log('로그인 성공:', response.data.message); // 로그인 성공 메시지 출력
-            console.log('로그인 성공한 이메일:', response.data.user); // 로그인 성공한 이메일 출력
-            navigate('/story'); // 로그인 성공 시 스토리텔링 페이지로 이동
+            console.log('로그인 성공:', response.data.message);
+            console.log('로그인 성공한 이메일:', response.data.user);
+            navigate('/story');
         } catch (error) {
-            console.error('로그인 실패:', error.response?.data || error.message); // 서버에서 반환된 에러 메시지 출력
-            setErrorMessage(error.response?.data?.message || '로그인에 실패했습니다. 다시 시도해주세요.'); // 에러 메시지 설정
+            console.error('로그인 실패:', error.response?.data || error.message);
+            setErrorMessage(error.response?.data?.message || '로그인에 실패했습니다. 다시 시도해주세요.');
         }
     };
 
