@@ -57,7 +57,7 @@ const Mypage = () => {
     } else if (questClearedCount >= 1) {
       return `${process.env.PUBLIC_URL}/star1.png`;
     } else {
-      return null; // 별 이미지가 없는 경우
+      return `${process.env.PUBLIC_URL}/monkeys.png`;
     }
   };
 
@@ -68,15 +68,10 @@ const Mypage = () => {
       <AppWrapper>
         <Header>
           <Title>마이페이지</Title>
-          <Logo src={`${process.env.PUBLIC_URL}/monkeys.png`} />
         </Header>
 
         <StarSection>
-          {questClearedCount > 0 ? (
-            <StarImage src={getStarImage()} />
-          ) : (
-            <StarText>탐험을 시작해 별을 획득해보세요!</StarText>
-          )}
+          <StarImage src={getStarImage()} />
         </StarSection>
 
         <ButtonGrid>
@@ -190,11 +185,6 @@ const Title = styled.h1`
     text-align: center;
 `;
 
-const Logo = styled.img`
-    width: 150px;
-    height: 150px;
-`;
-
 const StarSection = styled.div`
     display: flex;
     justify-content: center;
@@ -206,11 +196,6 @@ const StarSection = styled.div`
 const StarImage = styled.img`
     width: 100px;
     height: 100px;
-`;
-
-const StarText = styled.p`
-    font-size: 16px;
-    color: #333;
 `;
 
 const ButtonGrid = styled.div`
