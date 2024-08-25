@@ -58,7 +58,7 @@ const StartButton = styled.button`
     padding: 10px 20px;
     border-radius: 50px;
     cursor: pointer;
-    font-size: 35px;
+    font-size: 30px;
     width: 60%;
 `;
 

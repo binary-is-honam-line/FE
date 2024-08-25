@@ -174,57 +174,59 @@ const List = () => {
       {isStoryModalOpen && (
         <ModalOverlay>
           <ModalContent>
-            <ModalTitle>퀘스트 배포</ModalTitle>
-            <ModalLabel>이름</ModalLabel>
-            <ModalInput
-            type="text"
-            value={questName}
-            onChange={(e) => setQuestName(e.target.value)}
-          />
-          <ModalLabel>위치</ModalLabel>
-          <LocationSelector
-            selectedLocation={location}
-            setSelectedLocation={setLocation}
-          />
-          <ModalLabel>메인 스토리</ModalLabel>
-          <ModalTextarea
-            value={mainStory}
-            onChange={(e) => setMainStory(e.target.value)}
-            style={{minHeight: '100px'}}
-          />
-          <ModalLabel>적정 인원</ModalLabel>
-          <ModalInput
-            type="number"
-            placeholder="5"
-            value={headCount}
-            onChange={(e) => setHeadCount(e.target.value)}  // 숫자가 아닌 문자열로 다룹니다
-          />
-          <ModalLabel>예상 시간</ModalLabel>
-          <ModalInput
-            type="text"
-            placeholder="예: 03:00:00 (시간:분:초)"
-            value={time}
-            onChange={(e) => setTime(e.target.value)}
-          />
-          <ModalLabel>대표 사진</ModalLabel>
-          <ModalImagePreview src={imagePreview} alt="대표 사진" />
-          <ModalInput
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-          />
-          <ModalButtons>
-            <ModalButton onClick={() => setStoryModalOpen(false)}>취소</ModalButton>
-            <ModalButton onClick={handleDistribute} disabled={isDistributing}>
-              {isDistributing ? '배포 중...' : '배포'}
-            </ModalButton>
-          </ModalButtons>
-        </ModalContent>
-      </ModalOverlay>
-    )}
-  </Container>
+            <ScrollContent>
+              <ModalTitle>퀘스트 배포</ModalTitle>
+              <ModalLabel>이름</ModalLabel>
+              <ModalInput
+                type="text"
+                value={questName}
+                onChange={(e) => setQuestName(e.target.value)}
+              />
+              <ModalLabel>위치</ModalLabel>
+              <LocationSelector
+                selectedLocation={location}
+                setSelectedLocation={setLocation}
+              />
+              <ModalLabel>메인 스토리</ModalLabel>
+              <ModalTextarea
+                value={mainStory}
+                onChange={(e) => setMainStory(e.target.value)}
+                style={{ minHeight: '100px' }}
+              />
+              <ModalLabel>적정 인원</ModalLabel>
+              <ModalInput
+                type="number"
+                placeholder="5"
+                value={headCount}
+                onChange={(e) => setHeadCount(e.target.value)}  // 숫자가 아닌 문자열로 다룹니다
+              />
+              <ModalLabel>예상 시간</ModalLabel>
+              <ModalInput
+                type="text"
+                placeholder="예: 03:00:00 (시간:분:초)"
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+              />
+              <ModalLabel>대표 사진</ModalLabel>
+              <ModalImagePreview src={imagePreview} alt="대표 사진" />
+              <ModalInput
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+              />
+              <ModalButtons>
+                <ModalButton onClick={() => setStoryModalOpen(false)}>취소</ModalButton>
+                <ModalButton onClick={handleDistribute} disabled={isDistributing}>
+                  {isDistributing ? '배포 중...' : '배포'}
+                </ModalButton>
+              </ModalButtons>
+            </ScrollContent>
+          </ModalContent>
+        </ModalOverlay>
+      )}
+    </Container>
   );
-}
+};
 
 const Container = styled.div`
   display: flex;
@@ -407,10 +409,17 @@ const ModalContent = styled.div`
   background-color: white;
   padding: 20px;
   border-radius: 10px;
-  text-align: center;
   width: 100%;
   max-width: 375px;
+  height: 80vh; /* 전체 높이의 80%로 설정 */
+  display: flex;
+  flex-direction: column;
   box-sizing: border-box;
+`;
+
+const ScrollContent = styled.div`
+  flex-grow: 1;
+  overflow-y: auto;
 `;
 
 const ModalTitle = styled.h2`

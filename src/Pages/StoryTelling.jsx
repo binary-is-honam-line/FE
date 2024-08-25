@@ -54,14 +54,16 @@ const StoryTelling = () => {
       <BackgroundImageLeft />
       <BackgroundImageRight />
       <AppWrapper>
-        <ContentWrapper>
-          <MonkeyImage src={`${process.env.PUBLIC_URL}/monkeys.png`} alt="Monkey" />
-          <SpeechBubble onClick={handleNext}>
-            <Text>{displayedText}</Text>
-            <NextButton>⏩ 계속하려면 클릭</NextButton>
-          </SpeechBubble>
-          <SkipButton onClick={handleSkip}>⏭ 스킵</SkipButton>
-        </ContentWrapper>
+        <ScrollContent>
+          <ContentWrapper>
+            <MonkeyImage src={`${process.env.PUBLIC_URL}/monkeys.png`} alt="Monkey" />
+            <SpeechBubble onClick={handleNext}>
+              <Text>{displayedText}</Text>
+              <NextButton>⏩ 계속하려면 클릭</NextButton>
+            </SpeechBubble>
+            <SkipButton onClick={handleSkip}>⏭ 스킵</SkipButton>
+          </ContentWrapper>
+        </ScrollContent>
       </AppWrapper>
     </Container>
   );
@@ -105,13 +107,23 @@ const AppWrapper = styled.div`
   max-width: 375px;
   height: 100vh;
   background-color: #A2CA71;
-  padding: 20px;
   display: flex;
   flex-direction: column;
   justify-content: center; /* 중앙 정렬 */
   align-items: center;
   position: relative;
   z-index: 1;
+`;
+
+const ScrollContent = styled.div`
+  flex-grow: 1;
+  width: 100%;
+  overflow-y: auto;
+  padding: 10px 20px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* 수평 중앙 정렬 */
 `;
 
 const ContentWrapper = styled.div`

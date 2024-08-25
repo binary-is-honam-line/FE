@@ -43,21 +43,23 @@ const LocationSelector = ({ selectedLocation, setSelectedLocation, noBorder }) =
         <ModalOverlay onClick={closeModal}>
           <ModalContent onClick={(e) => e.stopPropagation()}>
             <Title>지역 선택</Title>
-            <LocationGrid>
-              {locations.map((row, rowIndex) => (
-                <Row key={rowIndex}>
-                  {row.map((location, colIndex) => (
-                    <LocationButton 
-                      key={colIndex} 
-                      onClick={() => handleLocationClick(location)}
-                      $isSelected={tempLocation === location}
-                    >
-                      {location}
-                    </LocationButton>
-                  ))}
-                </Row>
-              ))}
-            </LocationGrid>
+            <ScrollContent>
+              <LocationGrid>
+                {locations.map((row, rowIndex) => (
+                  <Row key={rowIndex}>
+                    {row.map((location, colIndex) => (
+                      <LocationButton 
+                        key={colIndex} 
+                        onClick={() => handleLocationClick(location)}
+                        $isSelected={tempLocation === location}
+                      >
+                        {location}
+                      </LocationButton>
+                    ))}
+                  </Row>
+                ))}
+              </LocationGrid>
+            </ScrollContent>
             <ButtonContainer>
               <ActionButton onClick={closeModal}>취소하기</ActionButton>
               <ActionButton onClick={handleSelect}>선택하기</ActionButton>
@@ -103,8 +105,17 @@ const ModalContent = styled.div`
   border-radius: 10px;
   width: 80%;
   max-width: 375px;
+  max-height: 80vh; /* 모달의 최대 높이 설정 */
   text-align: center;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+`;
+
+const ScrollContent = styled.div`
+  flex-grow: 1;
+  overflow-y: auto; /* 스크롤 가능하게 설정 */
+  margin-bottom: 20px; /* 하단 버튼과의 간격 설정 */
 `;
 
 const Title = styled.h2`
@@ -140,7 +151,6 @@ const LocationButton = styled.button`
 const ButtonContainer = styled.div`
   display: flex;
   justify-content: space-between;
-  margin-top: 20px;
 `;
 
 const ActionButton = styled.button`

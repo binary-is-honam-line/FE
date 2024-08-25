@@ -20,7 +20,6 @@ const Edit = () => {
         if (storedQuestId) {
             setLatestQuestId(storedQuestId);
         }
-
         // API 호출로 유저 데이터를 가져옴
         api.get('/api/user/info')
             .then(response => {
@@ -74,45 +73,44 @@ const Edit = () => {
             <BackgroundImageLeft />
             <BackgroundImageRight />
             <AppWrapper>
-                <Header>
-                    <ImageButton>
-                        <ButtonImage src={`${process.env.PUBLIC_URL}/edit.png`} alt="회원 정보 수정" />
-                        <ButtonLabel>회원 정보 수정</ButtonLabel>
-                    </ImageButton>
-                </Header>
+                <ScrollContent>
+                    <Header>
+                        <Title>회원 정보 수정</Title>
+                    </Header>
 
-                <Form>
-                    <Label>이름</Label>
-                    <Input
-                        type="text"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                    />
+                    <Form>
+                        <Label>이름</Label>
+                        <Input
+                            type="text"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                        />
 
-                    <Label>이메일</Label>
-                    <Input
-                        type="email"
-                        value={email}
-                        readOnly
-                    />
-                    <Hint>*이메일은 수정이 불가합니다.</Hint>
+                        <Label>이메일</Label>
+                        <Input
+                            type="email"
+                            value={email}
+                            readOnly
+                        />
+                        <Hint>*이메일은 수정이 불가합니다.</Hint>
 
-                    <Label>닉네임</Label>
-                    <Input
-                        type="text"
-                        value={nickname}
-                        onChange={(e) => setNickname(e.target.value)}
-                    />
+                        <Label>닉네임</Label>
+                        <Input
+                            type="text"
+                            value={nickname}
+                            onChange={(e) => setNickname(e.target.value)}
+                        />
 
-                    <Label>전화번호</Label>
-                    <Input
-                        type="tel"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                    />
+                        <Label>전화번호</Label>
+                        <Input
+                            type="tel"
+                            value={phone}
+                            onChange={(e) => setPhone(e.target.value)}
+                        />
 
-                    <SaveButton onClick={handleSave}>저장하기</SaveButton>
-                </Form>
+                        <SaveButton onClick={handleSave}>저장하기</SaveButton>
+                    </Form>
+                </ScrollContent>
 
                 <BottomBar>
                     <BottomButton onClick={() => navigate('/player')}>
@@ -190,47 +188,38 @@ const AppWrapper = styled.div`
     max-width: 375px;
     height: 100vh;
     background-color: #FEFEFE;
-    padding: 0;
     display: flex;
     flex-direction: column;
-    align-items: center;
     justify-content: space-between;
     position: relative;
     z-index: 1;
 `;
 
-const Header = styled.div`
-    width: 40%;
-    text-align: center;
-    margin-top: 10%;
+const ScrollContent = styled.div`
+    flex-grow: 1;
+    width: 100%;
+    overflow-y: auto;
+    padding: 10px 20px; /* padding을 줄여 스크롤 영역을 더 넓게 확보 */
+    box-sizing: border-box;
+    margin-top: 20px; /* 상단에 여백을 추가해 콘텐츠가 하단바와 겹치지 않도록 조정 */
+    margin-bottom: 80px; /* 하단바 공간을 확보하기 위해 추가 */
 `;
 
-const ImageButton = styled.div`
+const Header = styled.div`
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    background-color: #BEDC74;
-    padding: 20px;
-    border-radius: 15px;
-    aspect-ratio: 1;
+    margin-bottom: 20px;
 `;
 
-const ButtonImage = styled.img`
-    width: 50px;
-    height: 50px;
-`;
-
-const ButtonLabel = styled.span`
-    font-size: 16px;
+const Title = styled.h1`
+    font-size: 24px;
     color: #333;
-    margin-top: 10px;
+    text-align: center;
 `;
 
 const Form = styled.div`
-    width: 90%;
-    margin-top: auto;
-    margin-bottom: auto;
+    width: 100%;
 `;
 
 const Label = styled.label`

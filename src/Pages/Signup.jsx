@@ -11,7 +11,7 @@ const Container = styled.div`
     align-items: center;
     min-height: 100vh;
     position: relative;
-    overflow: hidden;
+    background-color: #F6E96B; /* 배경색 추가 */
 `;
 
 const BackgroundImageLeft = styled.div`
@@ -47,21 +47,21 @@ const AppWrapper = styled.div`
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center; /* 컨텐츠를 수직으로 중앙에 배치 */
     position: relative;
     z-index: 1;
-    overflow-y: auto; /* 스크롤 가능하도록 설정 */
+    overflow-y: auto; /* 필요한 경우 스크롤 가능 */
 `;
 
 const Logo = styled.img`
-    width: 200px;
-    margin-top: 10%;
-    margin-bottom: 5%;
+    width: 150px;
+    margin-bottom: 20px; /* 로고 아래 여백을 조금 줄임 */
 `;
 
 const Input = styled.input`
     width: 80%;
     padding: 15px;
-    margin-bottom: 5%;
+    margin-bottom: 15px; /* 입력 필드 사이의 간격을 조정 */
     border: 1px solid #DEDEDE;
     border-radius: 5px;
     font-size: 20px;
@@ -71,11 +71,11 @@ const SignupButton = styled.button`
     background-color: #387F39;
     color: white;
     border: none;
-    padding: 10px 20px;
+    padding: 15px 20px;
     border-radius: 50px;
     cursor: pointer;
-    font-size: 35px;
-    width: 90%;
+    font-size: 20px;
+    width: 80%;
     margin-bottom: 20px;
 
     &:hover {
@@ -84,12 +84,10 @@ const SignupButton = styled.button`
 `;
 
 const Footer = styled.div`
-    position: absolute;
-    bottom: 1%;
-    left: 20px;
     display: flex;
     align-items: center;
     font-size: 14px;
+    margin-top: 20px;
 `;
 
 const FooterText = styled.span`

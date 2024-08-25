@@ -8,7 +8,6 @@ const Album = () => {
     const latestQuestId = sessionStorage.getItem('latestQuestId');
     const [quests, setQuests] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
-
     // 데이터 불러오기
     useEffect(() => {
         const fetchQuests = async () => {
@@ -16,7 +15,6 @@ const Album = () => {
                 // 클리어한 퀘스트 목록 가져오기
                 const response = await api.get('/api/clear/quest-album');
                 const clearedQuests = response.data;
-
                 // 퀘스트 상세 정보와 이미지를 함께 불러오기
                 const questsData = await Promise.all(clearedQuests.map(async (quest) => {
                     const imageResponse = await api.get(`/api/play/${quest.questId}/image`, { responseType: 'blob' });
@@ -52,78 +50,81 @@ const Album = () => {
         }
     };
 
-    if (quests.length === 0) {
-        return <p>퀘스트 앨범을 불러오는 중...</p>;
-    }
+    const currentQuest = quests.length > 0 ? quests[currentIndex] : null;
 
-    const currentQuest = quests[currentIndex];
+    return (
+        <Container>
+            <BackgroundImageLeft />
+            <BackgroundImageRight />
+            <AppWrapper>
+                <ScrollContent>
+                    <Header>
+                        <Title>퀘스트 앨범</Title>
+                    </Header>
+                    <Content>
+                        {currentQuest ? (
+                            <>
+                                <SideButton onClick={handlePrev}>{'<'}</SideButton>
+                                <QuestBox>
+                                    <QuestImageWrapper>
+                                        <QuestImage src={currentQuest.image} alt="대표 사진" />
+                                    </QuestImageWrapper>
+                                    <QuestName>{currentQuest.questName}</QuestName>
+                                    <QuestInfo>
+                                        <InfoItem>
+                                            <InfoIcon src="/location.png" alt="위치 아이콘" />
+                                            {currentQuest.location}
+                                        </InfoItem>
+                                        <InfoItem>
+                                            <InfoIcon src="/user.png" alt="사용자 아이콘" />
+                                            {currentQuest.userNickname}
+                                        </InfoItem>
+                                    </QuestInfo>
+                                    <Label>스토리</Label>
+                                    <Story>{currentQuest.mainStory}</Story>
+                                    <Label>스테이지</Label>
+                                    <Stages>
+                                        {currentQuest.stageNames.map((stage, index) => (
+                                            <Stage key={index}>{stage}</Stage>
+                                        ))}
+                                    </Stages>
+                                    <ClearDate>{currentQuest.date} 클리어</ClearDate>
+                                </QuestBox>
+                                <SideButton onClick={handleNext}>{'>'}</SideButton>
+                            </>
+                        ) : (
+                            <LoadingMessage>퀘스트 앨범을 불러오는 중...</LoadingMessage>
+                        )}
+                    </Content>
+                </ScrollContent>
 
-  return (
-    <Container>
-      <BackgroundImageLeft />
-      <BackgroundImageRight />
-      <AppWrapper>
-        <Header>
-            <BackButton onClick={() => navigate(-1)}>←</BackButton>
-            <Title>퀘스트 앨범</Title>
-        </Header>
-        <Content>
-            <SideButton onClick={handlePrev}>{'<'}</SideButton>
-            <QuestBox>
-                    <QuestImageWrapper>
-                        <QuestImage src={currentQuest.image} alt="대표 사진" />
-                    </QuestImageWrapper>
-                    <QuestName>{currentQuest.questName}</QuestName>
-                    <QuestInfo>
-                    <InfoItem>
-                            <InfoIcon src="/location.png" alt="위치 아이콘" />
-                            {currentQuest.location}
-                    </InfoItem>
-                    <InfoItem>
-                            <InfoIcon src="/user.png" alt="사용자 아이콘" />
-                            {currentQuest.userNickname}
-                    </InfoItem>
-                    </QuestInfo>
-                    <Label>스토리</Label>
-                    <Story>{currentQuest.mainStory}</Story>
-                    <Label>스테이지</Label>
-                    <Stages>
-                        {currentQuest.stageNames.map((stage, index) => (
-                            <Stage key={index}>{stage}</Stage>
-                        ))}
-                    </Stages>
-                    <ClearDate>{currentQuest.date} 클리어</ClearDate>
-            </QuestBox>
-            <SideButton onClick={handleNext}>{'>'}</SideButton>
-        </Content>
-
-        <BottomBar>
-            <BottomButton onClick={() => navigate('/player')}>
-                <ButtonImageBottom
-                    src={`${process.env.PUBLIC_URL}/search.png`}
-                />
-                <ButtonLabelBottom>퀘스트 검색</ButtonLabelBottom>
-            </BottomButton>
-            <BottomButton onClick={handlePlayClick}>
-                <ButtonImageBottom
-                    src={`${process.env.PUBLIC_URL}/play.png`}
-                />
-                <ButtonLabelBottom>플레이</ButtonLabelBottom>
-            </BottomButton>
-             <BottomButton onClick={() => navigate('/mypage')}>
-                <ButtonImageBottom
-                    src={`${process.env.PUBLIC_URL}/mypage.png`}
-                />
-                <ButtonLabelBottom>마이페이지</ButtonLabelBottom>
-            </BottomButton>
-            <BottomButton onClick={() => navigate('/select')}>
-                <ButtonImageBottom src={`${process.env.PUBLIC_URL}/mode.png`} />
-                <ButtonLabelBottom>모드선택</ButtonLabelBottom>
-            </BottomButton>
-        </BottomBar>
-      </AppWrapper>
-    </Container>
-  );
+                <BottomBar>
+                    <BottomButton onClick={() => navigate('/player')}>
+                        <ButtonImageBottom
+                            src={`${process.env.PUBLIC_URL}/search.png`}
+                        />
+                        <ButtonLabelBottom>퀘스트 검색</ButtonLabelBottom>
+                    </BottomButton>
+                    <BottomButton onClick={handlePlayClick}>
+                        <ButtonImageBottom
+                            src={`${process.env.PUBLIC_URL}/play.png`}
+                        />
+                        <ButtonLabelBottom>플레이</ButtonLabelBottom>
+                    </BottomButton>
+                    <BottomButton onClick={() => navigate('/mypage')}>
+                        <ButtonImageBottom
+                            src={`${process.env.PUBLIC_URL}/mypage.png`}
+                        />
+                        <ButtonLabelBottom>마이페이지</ButtonLabelBottom>
+                    </BottomButton>
+                    <BottomButton onClick={() => navigate('/select')}>
+                        <ButtonImageBottom src={`${process.env.PUBLIC_URL}/mode.png`} />
+                        <ButtonLabelBottom>모드선택</ButtonLabelBottom>
+                    </BottomButton>
+                </BottomBar>
+            </AppWrapper>
+        </Container>
+    );
 };
 
 const Container = styled.div`
@@ -173,6 +174,18 @@ const AppWrapper = styled.div`
     z-index: 1;
 `;
 
+const ScrollContent = styled.div`
+    flex-grow: 1;
+    width: 100%;
+    overflow-y: auto;
+    padding: 10px 20px;
+    box-sizing: border-box;
+    margin-top: 20px;
+    margin-bottom: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* 수평 중앙 정렬 */
+`;
 
 const Header = styled.div`
     display: flex;
@@ -180,14 +193,6 @@ const Header = styled.div`
     align-items: center;
     margin-bottom: 20px;
     width: 100%;
-`;
-
-const BackButton = styled.button`
-    background: none;
-    border: none;
-    font-size: 24px;
-    cursor: pointer;
-    align-self: flex-start;
 `;
 
 const Title = styled.h1`
@@ -238,7 +243,6 @@ const QuestImage = styled.img`
     border-radius: 10px;
 `;
 
-
 const QuestName = styled.h2`
     font-size: 18px;
     margin-bottom: 10px;
@@ -270,7 +274,7 @@ const Label = styled.div`
 
 const Story = styled.div`
     margin-bottom: 10px;
-    white-space: pre-wrap; /* 줄바꿈을 유지하기 위해 추가 */
+    white-space: pre-wrap;
 `;
 
 const Stages = styled.div`
@@ -325,6 +329,12 @@ const ButtonImageBottom = styled.img`
 const ButtonLabelBottom = styled.div`
     font-size: 12px;
     text-align: center;
+`;
+
+const LoadingMessage = styled.p`
+    text-align: center;
+    font-size: 16px;
+    color: #555;
 `;
 
 export default Album;
