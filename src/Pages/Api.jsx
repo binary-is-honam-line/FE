@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // 환경에 따라 baseURL 설정
-const baseURL = 'http://localhost:8080';
+const baseURL = process.env.REACT_APP_API_BASE_URL;
 
 const api = axios.create({
   baseURL,
