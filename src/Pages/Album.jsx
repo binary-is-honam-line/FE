@@ -1,34 +1,40 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
+import api from './Api';
 
 const Album = () => {
     const navigate = useNavigate();
     const latestQuestId = sessionStorage.getItem('latestQuestId');
-
-    // 하드코딩된 퀘스트 데이터
-    const quests = [
-        {
-            image: 'https://via.placeholder.com/400',  // 대표 사진
-            questName: '광주 문화 여행',
-            location: '광주',
-            nickname: '집에가고싶은농곰',
-            mainStory: '메인 스토리\n~~~~~~~~~~~~~~~~~~~~~~~~~~~\n~~~~~~~~~~~~~~~~~~~~~~~~~~~',
-            stages: ['국립아시아문화전당', '광주 사직공원', '양림동역사마을'],
-            clearDate: '2024.08.18',
-        },
-        {
-            image: 'https://via.placeholder.com/400',  // 다른 퀘스트의 대표 사진
-            questName: '목포 먹방 투어',
-            location: '목포',
-            nickname: '배고파',
-            mainStory: '목포의 맛집을 다녀보세요!',
-            stages: ['목포회센타', '코로방제과점', '대반동201'],
-            clearDate: '2024.08.20',
-        },
-    ];
-
+    const [quests, setQuests] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
+
+    // 데이터 불러오기
+    useEffect(() => {
+        const fetchQuests = async () => {
+            try {
+                // 클리어한 퀘스트 목록 가져오기
+                const response = await api.get('/api/clear/quest-album');
+                const clearedQuests = response.data;
+
+                // 퀘스트 상세 정보와 이미지를 함께 불러오기
+                const questsData = await Promise.all(clearedQuests.map(async (quest) => {
+                    const imageResponse = await api.get(`/api/play/${quest.questId}/image`, { responseType: 'blob' });
+                    const imageUrl = URL.createObjectURL(imageResponse.data);
+                    return {
+                        ...quest,
+                        image: imageUrl,
+                    };
+                }));
+
+                setQuests(questsData);
+            } catch (error) {
+                console.error("퀘스트 데이터를 불러오는 중 오류가 발생했습니다:", error);
+            }
+        };
+
+        fetchQuests();
+    }, []);
 
     const handlePrev = () => {
         setCurrentIndex((prevIndex) => (prevIndex > 0 ? prevIndex - 1 : quests.length - 1));
@@ -45,6 +51,10 @@ const Album = () => {
             alert("진행 중인 퀘스트가 없습니다.");
         }
     };
+
+    if (quests.length === 0) {
+        return <p>퀘스트 앨범을 불러오는 중...</p>;
+    }
 
     const currentQuest = quests[currentIndex];
 
@@ -71,18 +81,18 @@ const Album = () => {
                     </InfoItem>
                     <InfoItem>
                             <InfoIcon src="/user.png" alt="사용자 아이콘" />
-                            {currentQuest.nickname}
+                            {currentQuest.userNickname}
                     </InfoItem>
                     </QuestInfo>
                     <Label>스토리</Label>
                     <Story>{currentQuest.mainStory}</Story>
                     <Label>스테이지</Label>
                     <Stages>
-                        {currentQuest.stages.map((stage, index) => (
+                        {currentQuest.stageNames.map((stage, index) => (
                             <Stage key={index}>{stage}</Stage>
                         ))}
                     </Stages>
-                    <ClearDate>{currentQuest.clearDate} 클리어</ClearDate>
+                    <ClearDate>{currentQuest.date} 클리어</ClearDate>
             </QuestBox>
             <SideButton onClick={handleNext}>{'>'}</SideButton>
         </Content>
