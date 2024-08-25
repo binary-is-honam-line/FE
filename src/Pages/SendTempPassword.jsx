@@ -108,7 +108,7 @@ const Container = styled.div`
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    min-height: 100vh;
     position: relative;
     overflow: hidden;
 `;
@@ -140,7 +140,7 @@ const BackgroundImageRight = styled.div`
 const AppWrapper = styled.div`
     width: 100%;
     max-width: 375px;
-    height: 100vh;
+    min-height: 100vh;
     background-color: #A2CA71;
     padding: 20px;
     display: flex;
@@ -148,6 +148,7 @@ const AppWrapper = styled.div`
     align-items: center;
     position: relative;
     z-index: 1;
+    overflow-y: auto; /* 스크롤 가능하도록 설정 */
 `;
 
 const Header = styled.div`

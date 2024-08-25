@@ -9,7 +9,7 @@ const Container = styled.div`
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    min-height: 100vh;
     position: relative;
     overflow: hidden;
 `;
@@ -18,7 +18,7 @@ const BackgroundImageLeft = styled.div`
     position: absolute;
     top: 0;
     left: 0;
-    width: calc(50% - 187.5px); /* 50%에서 AppWrapper의 절반을 뺀 값 */
+    width: calc(50% - 187.5px);
     height: 100%;
     background-image: url('/left.png');
     background-repeat: no-repeat;
@@ -30,7 +30,7 @@ const BackgroundImageRight = styled.div`
     position: absolute;
     top: 0;
     right: 0;
-    width: calc(50% - 187.5px); /* 50%에서 AppWrapper의 절반을 뺀 값 */
+    width: calc(50% - 187.5px);
     height: 100%;
     background-image: url('/right.png');
     background-repeat: no-repeat;
@@ -41,7 +41,7 @@ const BackgroundImageRight = styled.div`
 const AppWrapper = styled.div`
     width: 100%;
     max-width: 375px;
-    height: 100vh;
+    min-height: 100vh;
     background-color: #A2CA71;
     padding: 20px;
     display: flex;
@@ -49,6 +49,7 @@ const AppWrapper = styled.div`
     align-items: center;
     position: relative;
     z-index: 1;
+    overflow-y: auto; /* 스크롤 가능하도록 설정 */
 `;
 
 const Header = styled.div`
@@ -162,7 +163,6 @@ const FindId = () => {
     const [errorMessage, setErrorMessage] = useState('');
 
     useEffect(() => {
-        // 페이지 로드 시 세션을 확인하여 이미 로그인된 상태라면 선택 모드로 리다이렉트
         const user = sessionStorage.getItem('user');
         if (user) {
             navigate('/select');
@@ -179,8 +179,8 @@ const FindId = () => {
             });
             const data = response.data;
             if (response.status === 200 && data.email) {
-                setFoundId(data.email); // API에서 가져온 이메일 설정
-                setModalOpen(true); // 모달 열기
+                setFoundId(data.email);
+                setModalOpen(true);
             } else {
                 setErrorMessage('아이디를 찾을 수 없습니다.');
             }
@@ -195,7 +195,6 @@ const FindId = () => {
     };
 
     const handleLoginButtonClick = () => {
-        // 로그인 페이지로 이동
         navigate('/login');
         closeModal();
     };
