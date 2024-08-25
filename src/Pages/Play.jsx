@@ -91,7 +91,7 @@ const Play = () => {
     
                     const newCircle = new kakao.maps.Circle({
                         center: locPosition,
-                        radius: 500,
+                        radius: 50,
                         strokeWeight: 5,
                         strokeColor: '#004c80',
                         strokeOpacity: 0.7,
@@ -200,7 +200,7 @@ const Play = () => {
     };
 
     const handleMarkerClick = (stage) => {
-        // 현재 위치가 null인지 다시 확인
+        // 현재 위치가 설정되었는지 다시 확인
         if (!currentPosition) {
             console.error("현재 위치가 설정되지 않았습니다. 위치 확인 중입니다.");
             alert("현재 위치를 확인할 수 없습니다. 잠시 후 다시 시도해주세요.");
@@ -209,7 +209,7 @@ const Play = () => {
     
         // 클릭한 마커와 현재 위치 간의 거리 계산
         const distance = calculateDistance(currentPosition, new kakao.maps.LatLng(stage.lat, stage.lng));
-        if (distance > 500) {
+        if (distance > 50) {
             alert("아직 스테이지 근처에 위치하지 않았습니다.");
             return;
         }
@@ -232,7 +232,7 @@ const Play = () => {
                 console.error("퀴즈를 불러오는데 실패했습니다.", error);
             }
         });
-    };
+    };    
 
     const calculateDistance = (position1, position2) => {
         if (!position1 || !position2) {
@@ -262,42 +262,53 @@ const Play = () => {
     const handleQuizSubmit = () => {
         api.post(`/api/play/${questId}/${currentStage.userStageId}`, { answer: quizAnswer })
             .then(response => {
+                console.log(response.data); // 서버 응답을 확인하기 위해 콘솔에 출력
                 if (response.data === "스테이지를 클리어했습니다!") {
                     alert("정답입니다! 스테이지를 클리어했습니다.");
-                    setModalIsOpen(false);
+                    setModalIsOpen(false); // 모달을 닫음
                     checkQuestCompletion(); // 퀘스트 클리어 여부 확인
                 } else {
                     alert("틀렸습니다. 다시 풀어보세요.");
+                    // 모달을 유지 (setModalIsOpen(false) 호출하지 않음)
                 }
             })
             .catch(error => {
-                if (error.response && error.response.status === 403) {
-                    alert("틀렸습니다. 다시 풀어보세요.");
-                } else {
-                    console.error("퀴즈 제출에 실패했습니다.", error);
-                    alert("퀴즈 제출 중 오류가 발생했습니다. 다시 시도해주세요.");
-                }
+                console.error("퀴즈 제출에 실패했습니다.", error);
+                alert("퀴즈 제출 중 오류가 발생했습니다. 다시 시도해주세요.");
+                // 서버 오류로 틀렸을 때에도 모달을 유지
             });
     };
-
+    
     const checkQuestCompletion = () => {
-        // 클리어한 퀘스트 갯수를 조회
-        api.get('/api/clear/quest-album/count')
+        // 퀘스트의 모든 스테이지를 확인
+        api.get(`/api/play/${questId}/points`)
             .then(response => {
-                const clearedCount = response.data;
-                setQuestClearedCount(clearedCount);
-                if (clearedCount >= 1) { // 1개 이상 클리어한 경우
-                    setShowClearModal(true);
-                }
-                if (clearedCount >= 1 && [1, 5, 10, 20, 30].includes(clearedCount)) { 
-                    // 해당 갯수에 도달한 경우 스타 모달도 보여줌
-                    setShowStarModal(true);
+                const stages = response.data;
+    
+                // 모든 스테이지의 cleared가 true인지 확인
+                const allCleared = stages.every(stage => stage.cleared);
+    
+                if (allCleared) {
+                    setShowClearModal(true); // 모든 스테이지가 클리어된 경우 클리어 모달을 표시
+                } else {
+                    // 다른 클리어된 스테이지 확인
+                    api.get('/api/clear/quest-album/count')
+                        .then(response => {
+                            const clearedCount = response.data;
+                            setQuestClearedCount(clearedCount);
+                            if (clearedCount >= 1 && [1, 5, 10, 20, 30].includes(clearedCount)) { 
+                                setShowStarModal(true);
+                            }
+                        })
+                        .catch(error => {
+                            console.error("클리어한 퀘스트 갯수를 가져오는데 실패했습니다.", error);
+                        });
                 }
             })
             .catch(error => {
-                console.error("클리어한 퀘스트 갯수를 가져오는데 실패했습니다.", error);
+                console.error("퀘스트 상태를 확인하는 중 오류가 발생했습니다.", error);
             });
-    };
+    };    
 
     const handleEndPlay = () => {
         api.post(`/api/play/${questId}/end`)
