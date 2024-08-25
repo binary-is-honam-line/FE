@@ -49,7 +49,7 @@ const AppWrapper = styled.div`
 `;
 
 const Logo = styled.img`
-    width: 150px;
+    width: 40%;
     margin-top: 15%;
     margin-bottom: 30px;
 `;
@@ -74,14 +74,14 @@ const TreasureImage = styled.img`
     position: absolute;
     bottom: 10px;
     left: 20px;
-    width: 200px;
+    width: 25%;
 `;
 
 const MonkeyImage = styled.img`
     position: absolute;
     bottom: 5px;
     right: 10px;
-    width: 150px;
+    width: 35%;
 `;
 
 const SelectMode = () => {
