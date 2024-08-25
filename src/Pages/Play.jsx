@@ -303,12 +303,14 @@ const Play = () => {
         api.post(`/api/play/${questId}/end`)
             .then(() => {
                 alert("플레이가 종료되었습니다.");
-                navigate('/'); // 플레이 종료 후 홈으로 이동
+                setTimeout(() => {
+                    navigate('/player'); // 3초 후 /player 페이지로 이동
+                }, 3000); // 3000ms = 3초
             })
             .catch(error => {
                 console.error("플레이 종료에 실패했습니다.", error);
             });
-    };
+    };    
 
     const getStarImage = () => {
         if (questClearedCount >= 30) {

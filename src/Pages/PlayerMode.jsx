@@ -14,6 +14,8 @@ const PlayerMode = () => {
   const [selectedQuest, setSelectedQuest] = useState(null);
   const [questDetail, setQuestDetail] = useState(null); // 모달에 표시할 퀘스트 상세 정보
   const [currentPage, setCurrentPage] = useState(1); // 현재 페이지 상태
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
 
   const navigate = useNavigate();
 
@@ -82,9 +84,32 @@ const PlayerMode = () => {
     }
   };
 
-  const handlePlayClick = (quest) => {
-    fetchQuestDetail(quest.questId); // 퀘스트 상세 정보 가져오기
-    setSelectedQuest(quest);
+  const handlePlayClick = async (quest) => {
+    try {
+      // 클리어한 퀘스트 목록 조회
+      const response = await api.get('/api/clear/quest-album');
+      const clearedQuests = response.data;
+
+      // 플레이하려는 퀘스트가 클리어한 목록에 있는지 확인
+      const isCleared = clearedQuests.some(clearedQuest => clearedQuest.questId === quest.questId);
+
+      if (isCleared) {
+        setAlertMessage(
+          <>
+            이미 클리어된 퀘스트입니다.
+            <br />
+            다른 퀘스트를 플레이해주세요.
+          </>
+        );
+                setIsAlertOpen(true);
+      } else {
+        // 클리어되지 않은 경우에만 퀘스트 상세 정보 가져오기
+        fetchQuestDetail(quest.questId); 
+        setSelectedQuest(quest);
+      }
+    } catch (error) {
+      console.error("퀘스트 클리어 상태를 확인하는 중 오류가 발생했습니다.", error);
+    }
   };
 
   const handleCloseModal = () => {
@@ -123,11 +148,11 @@ const PlayerMode = () => {
         <FixedHeader>
           <SearchBarWrapper>
             <LocationContainer>
-            <LocationSelector 
-              selectedLocation={selectedLocation}
-              setSelectedLocation={setSelectedLocation}
-              noBorder={true} // 여기서는 $를 빼고 전달
-            />
+              <LocationSelector 
+                selectedLocation={selectedLocation}
+                setSelectedLocation={setSelectedLocation}
+                noBorder={true} // 여기서는 $를 빼고 전달
+              />
             </LocationContainer>
             <SearchInput
               type="text"
@@ -214,6 +239,15 @@ const PlayerMode = () => {
           </BottomButton>
         </BottomBar>
       </AppWrapper>
+
+      {isAlertOpen && (
+        <CustomModal>
+          <ModalContent>
+            <ModalText>{alertMessage}</ModalText>
+            <ModalButton onClick={() => setIsAlertOpen(false)}>확인</ModalButton>
+          </ModalContent>
+        </CustomModal>
+      )}
 
       {questDetail && (
         <PlayModal
@@ -503,6 +537,48 @@ const ButtonImage = styled.img`
 const ButtonLabel = styled.div`
   font-size: 12px;
   text-align: center;
+`;
+
+const CustomModal = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+`;
+
+const ModalContent = styled.div`
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  width: 80%;
+  max-width: 300px;
+  text-align: center;
+  box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
+`;
+
+const ModalText = styled.p`
+  margin-bottom: 20px;
+  font-size: 16px;
+  color: #333;
+`;
+
+const ModalButton = styled.button`
+  padding: 10px 20px;
+  background-color: #A2CA71;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #81B265;
+  }
 `;
 
 export default PlayerMode;
