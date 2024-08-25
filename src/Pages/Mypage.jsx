@@ -66,33 +66,31 @@ const Mypage = () => {
       <BackgroundImageLeft />
       <BackgroundImageRight />
       <AppWrapper>
-        <Header>
-          <Title>마이페이지</Title>
-        </Header>
+        <ScrollContent>
+          <Header>
+            <Title>마이페이지</Title>
+          </Header>
 
-        <StarSection>
-          <StarImage src={getStarImage()} />
-        </StarSection>
+          <StarSection>
+            <StarImage src={getStarImage()} />
+          </StarSection>
 
-        <ButtonGrid>
-          <GridButton onClick={() => navigate('/edit')}>
-            <ButtonImage src={`${process.env.PUBLIC_URL}/edit.png`} />
-            <ButtonLabel>회원 정보 수정</ButtonLabel>
-          </GridButton>
-          <GridButton onClick={() => navigate('/password-reset')}>
-            <ButtonImage src={`${process.env.PUBLIC_URL}/password.png`} />
-            <ButtonLabel>비밀번호 재설정</ButtonLabel>
-          </GridButton>
-          <GridButton onClick={() => navigate('/album')}>
-            <ButtonImage src={`${process.env.PUBLIC_URL}/album.png`} />
-            <ButtonLabel>퀘스트 앨범</ButtonLabel>
-          </GridButton>
-          <GridButton onClick={handleLogout}>
-            <ButtonImage src={`${process.env.PUBLIC_URL}/logout.png`} />
-            <ButtonLabel>로그아웃</ButtonLabel>
-          </GridButton>
-        </ButtonGrid>
-        
+          <ButtonGrid>
+            <GridButton onClick={() => navigate('/edit')}>
+              <ButtonImage src={`${process.env.PUBLIC_URL}/edit.png`} />
+            </GridButton>
+            <GridButton onClick={() => navigate('/password-reset')}>
+              <ButtonImage src={`${process.env.PUBLIC_URL}/password.png`} />
+            </GridButton>
+            <GridButton onClick={() => navigate('/album')}>
+              <ButtonImage src={`${process.env.PUBLIC_URL}/album.png`} />
+            </GridButton>
+            <GridButton onClick={handleLogout}>
+              <ButtonImage src={`${process.env.PUBLIC_URL}/logout.png`} />
+            </GridButton>
+          </ButtonGrid>
+        </ScrollContent>
+
         <BottomBar>
           <BottomButton onClick={() => navigate('/player')}>
             <ButtonImageBottom
@@ -161,27 +159,37 @@ const AppWrapper = styled.div`
     max-width: 375px;
     height: 100vh;
     background-color: #FEFEFE;
-    padding: 0;
     display: flex;
     flex-direction: column;
-    align-items: center;
     justify-content: space-between;
+    align-items: center;
     position: relative;
     z-index: 1;
 `;
 
-const Header = styled.div`
+const ScrollContent = styled.div`
+    flex-grow: 1;
     width: 100%;
+    overflow-y: auto;
+    padding: 10px 20px;
+    box-sizing: border-box;
+    margin-top: 20px;
+    margin-bottom: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* 수평 중앙 정렬 */
+`;
+
+const Header = styled.div`
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-top: 20px;
+    margin-bottom: 20px;
 `;
 
 const Title = styled.h1`
     font-size: 24px;
     color: #333;
-    margin-bottom: 10px;
     text-align: center;
 `;
 
@@ -189,7 +197,6 @@ const StarSection = styled.div`
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-top: 20px;
     margin-bottom: 20px;
 `;
 
@@ -199,14 +206,12 @@ const StarImage = styled.img`
 `;
 
 const ButtonGrid = styled.div`
-    width: 80%;
+    width: 100%; 
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, 1fr); 
     grid-gap: 10px;
-    justify-content: center;
+    justify-items: center; 
     align-items: center;
-    margin-top: auto;
-    margin-bottom: auto;
 `;
 
 const GridButton = styled.button`
@@ -219,7 +224,7 @@ const GridButton = styled.button`
     border: none;
     border-radius: 10px;
     cursor: pointer;
-    width: 100%;
+    width: 90%; 
     aspect-ratio: 1;
 
     &:hover {
@@ -233,14 +238,9 @@ const GridButton = styled.button`
 `;
 
 const ButtonImage = styled.img`
-    width: 50px;
-    height: 50px;
+    width: 100%;
+    height: 100%;
     margin-bottom: 10px;
-`;
-
-const ButtonLabel = styled.span`
-    font-size: 14px;
-    color: #333;
 `;
 
 const BottomBar = styled.div`

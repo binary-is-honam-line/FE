@@ -409,8 +409,8 @@ const StoryTime = styled.p`
 `;
 
 const StoryImage = styled.img`
-  width: 120px;
-  height: 120px;
+  width: 50%;
+  height: 50%;
   object-fit: cover;
   border-radius: 10px;
   margin-left: 20px;

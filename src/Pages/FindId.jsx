@@ -11,7 +11,7 @@ const Container = styled.div`
     align-items: center;
     min-height: 100vh;
     position: relative;
-    overflow: hidden;
+    background-color: #F6E96B;
 `;
 
 const BackgroundImageLeft = styled.div`
@@ -47,9 +47,10 @@ const AppWrapper = styled.div`
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     position: relative;
     z-index: 1;
-    overflow-y: auto; /* 스크롤 가능하도록 설정 */
+    overflow-y: auto;
 `;
 
 const Header = styled.div`
@@ -58,7 +59,7 @@ const Header = styled.div`
     justify-content: flex-start;
     align-items: center;
     position: absolute;
-    top: 30px;
+    top: 20px;
     left: 20px;
 `;
 
@@ -66,25 +67,27 @@ const BackButton = styled.button`
     background-color: transparent;
     border: none;
     cursor: pointer;
-    font-size: 15px;
-    color: #333;
+    font-size: 18px;
+    color: #387F39;
     font-weight: bold;
+    padding: 10px;
+    border-radius: 10px;
 
     &:hover {
-        color: #000;
+        background-color: #81B265;
+        color: #FFFFFF;
     }
 `;
 
 const Logo = styled.img`
-    width: 200px;
-    margin-top: 50%;
-    margin-bottom: 20%;
+    width: 150px;
+    margin-bottom: 20px;
 `;
 
 const Input = styled.input`
     width: 80%;
     padding: 15px;
-    margin-bottom: 5%;
+    margin-bottom: 15px;
     border: 1px solid #DEDEDE;
     border-radius: 5px;
     font-size: 20px;
@@ -94,11 +97,11 @@ const FindIdButton = styled.button`
     background-color: #387F39;
     color: white;
     border: none;
-    padding: 10px 20px;
+    padding: 15px 20px;
     border-radius: 50px;
     cursor: pointer;
-    font-size: 35px;
-    width: 90%;
+    font-size: 20px;
+    width: 80%;
     margin-bottom: 20px;
 
     &:hover {
@@ -205,7 +208,7 @@ const FindId = () => {
             <BackgroundImageRight />
             <AppWrapper>
                 <Header>
-                    <BackButton onClick={() => navigate(-1)}>뒤로가기</BackButton>
+                    <BackButton onClick={() => navigate(-1)}>←</BackButton>
                 </Header>
                 <Logo src={logoImage} alt="Logo" />
                 <Input

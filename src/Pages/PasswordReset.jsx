@@ -63,32 +63,31 @@ const PasswordReset = () => {
             <BackgroundImageLeft />
             <BackgroundImageRight />
             <AppWrapper>
-                <Header>
-                    <ImageButton>
-                        <ButtonImage src={`${process.env.PUBLIC_URL}/password.png`} alt="비밀번호 재설정" />
-                        <ButtonLabel>비밀번호 재설정</ButtonLabel>
-                    </ImageButton>
-                </Header>
+                <ScrollContent>
+                    <Header>
+                        <Title>비밀번호 재설정</Title>
+                    </Header>
 
-                <Form>
-                    <Label>비밀번호 입력</Label>
-                    <Input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                    />
+                    <Form>
+                        <Label>비밀번호 입력</Label>
+                        <Input
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                        />
 
-                    <Label>비밀번호 재입력</Label>
-                    <Input
-                        type="password"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                    />
+                        <Label>비밀번호 재입력</Label>
+                        <Input
+                            type="password"
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                        />
 
-                    {errorMessage && <ErrorMessage>{errorMessage}</ErrorMessage>}  {/* 에러 메시지 출력 */}
+                        {errorMessage && <ErrorMessage>{errorMessage}</ErrorMessage>}  {/* 에러 메시지 출력 */}
 
-                    <SaveButton onClick={handleSave}>저장하기</SaveButton>
-                </Form>
+                        <SaveButton onClick={handleSave}>저장하기</SaveButton>
+                    </Form>
+                </ScrollContent>
 
                 <BottomBar>
                     <BottomButton onClick={() => navigate('/player')}>
@@ -166,47 +165,39 @@ const AppWrapper = styled.div`
     max-width: 375px;
     height: 100vh;
     background-color: #FEFEFE;
-    padding: 0;
     display: flex;
     flex-direction: column;
-    align-items: center;
     justify-content: space-between;
+    align-items: center;
     position: relative;
     z-index: 1;
 `;
 
-const Header = styled.div`
-    width: 40%;
-    text-align: center;
-    margin-top: 10%;
+const ScrollContent = styled.div`
+    flex-grow: 1;
+    width: 100%;
+    overflow-y: auto;
+    padding: 10px 20px; 
+    box-sizing: border-box;
+    margin-top: 20px;
+    margin-bottom: 80px;
 `;
 
-const ImageButton = styled.div`
+const Header = styled.div`
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    background-color: #BEDC74;
-    padding: 20px;
-    border-radius: 15px;
-    aspect-ratio: 1;
+    margin-bottom: 20px;
 `;
 
-const ButtonImage = styled.img`
-    width: 50px;
-    height: 50px;
-`;
-
-const ButtonLabel = styled.span`
-    font-size: 16px;
+const Title = styled.h1`
+    font-size: 24px;
     color: #333;
-    margin-top: 10px;
+    text-align: center;
 `;
 
 const Form = styled.div`
-    width: 90%;
-    margin-top: auto;
-    margin-bottom: auto;
+    width: 100%;
 `;
 
 const Label = styled.label`
