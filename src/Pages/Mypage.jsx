@@ -6,6 +6,7 @@ import api from './Api';
 const Mypage = () => {
   const navigate = useNavigate();
   const [latestQuestId, setLatestQuestId] = useState(null);
+  const [questClearedCount, setQuestClearedCount] = useState(0);
 
   useEffect(() => {
     // sessionStorage에서 최근에 플레이한 questId를 가져오기
@@ -13,6 +14,15 @@ const Mypage = () => {
     if (storedQuestId) {
       setLatestQuestId(storedQuestId);
     }
+
+    // 클리어한 퀘스트 갯수를 가져오기
+    api.get('/api/clear/quest-album/count')
+      .then(response => {
+        setQuestClearedCount(response.data);
+      })
+      .catch(error => {
+        console.error('클리어한 퀘스트 갯수를 가져오는 데 실패했습니다.', error);
+      });
   }, []);
 
   const handleLogout = async () => {
@@ -35,6 +45,22 @@ const Mypage = () => {
     }
   };
 
+  const getStarImage = () => {
+    if (questClearedCount >= 30) {
+      return `${process.env.PUBLIC_URL}/star5.png`;
+    } else if (questClearedCount >= 20) {
+      return `${process.env.PUBLIC_URL}/star4.png`;
+    } else if (questClearedCount >= 10) {
+      return `${process.env.PUBLIC_URL}/star3.png`;
+    } else if (questClearedCount >= 5) {
+      return `${process.env.PUBLIC_URL}/star2.png`;
+    } else if (questClearedCount >= 1) {
+      return `${process.env.PUBLIC_URL}/star1.png`;
+    } else {
+      return null; // 별 이미지가 없는 경우
+    }
+  };
+
   return (
     <Container>
       <BackgroundImageLeft />
@@ -44,6 +70,15 @@ const Mypage = () => {
           <Title>마이페이지</Title>
           <Logo src={`${process.env.PUBLIC_URL}/monkeys.png`} />
         </Header>
+
+        <StarSection>
+          {questClearedCount > 0 ? (
+            <StarImage src={getStarImage()} />
+          ) : (
+            <StarText>탐험을 시작해 별을 획득해보세요!</StarText>
+          )}
+        </StarSection>
+
         <ButtonGrid>
           <GridButton onClick={() => navigate('/edit')}>
             <ButtonImage src={`${process.env.PUBLIC_URL}/edit.png`} />
@@ -158,6 +193,24 @@ const Title = styled.h1`
 const Logo = styled.img`
     width: 150px;
     height: 150px;
+`;
+
+const StarSection = styled.div`
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    margin-bottom: 20px;
+`;
+
+const StarImage = styled.img`
+    width: 100px;
+    height: 100px;
+`;
+
+const StarText = styled.p`
+    font-size: 16px;
+    color: #333;
 `;
 
 const ButtonGrid = styled.div`
