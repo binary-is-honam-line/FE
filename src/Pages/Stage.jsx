@@ -243,17 +243,6 @@ const Textarea = styled.textarea`
     box-sizing: border-box;
 `;
 
-const Input = styled.input`
-    padding: 10px;
-    font-size: 16px;
-    border: 1px solid #A2CA71;
-    border-radius: 5px;
-    margin-bottom: 15px;
-    background-color: white;
-    width: 100%;
-    box-sizing: border-box;
-`;
-
 const QuizButtonGroup = styled.div`
     display: flex;
     justify-content: space-between;
