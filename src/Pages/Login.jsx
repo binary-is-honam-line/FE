@@ -102,7 +102,7 @@ const Link = styled.a`
 
 const Footer = styled.div`
     position: absolute;
-    bottom: 3%;
+    bottom: 1%;
     left: 20px;
     display: flex;
     align-items: center;
