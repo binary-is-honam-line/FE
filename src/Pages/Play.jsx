@@ -67,7 +67,7 @@ const Play = () => {
                 (position) => {
                     const lat = position.coords.latitude;
                     const lng = position.coords.longitude;
-                    
+
                     const locPosition = new kakao.maps.LatLng(lat, lng);
                     setCurrentPosition(locPosition); // 여기서 currentPosition을 업데이트
     
@@ -118,7 +118,7 @@ const Play = () => {
             setFallbackLocation(mapInstance);
         }
     }, [marker, circle]);
-    
+
     const setFallbackLocation = (mapInstance) => {
         const defaultPosition = new kakao.maps.LatLng(35.1595454, 126.8526012);
         setCurrentPosition(defaultPosition);
@@ -176,7 +176,7 @@ const Play = () => {
             });
 
             // 마커 클릭 이벤트 등록
-            kakao.maps.event.addListener(stageMarker, 'click', () => handleMarkerClick(stage));
+            kakao.maps.event.addListener(stageMarker, () => handleMarkerClick(stage));
 
             linePath.push(position);
             bounds.extend(position);
@@ -196,7 +196,6 @@ const Play = () => {
         }
     };
 
-    // 마커 클릭 이벤트에서 currentPosition을 직접 참조하지 않고 콜백 내에서 확인
     const handleMarkerClick = useCallback((stage) => {
         if (!currentPosition) {
             console.error("currentPosition is null when trying to handle marker click.");
@@ -242,8 +241,6 @@ const Play = () => {
         }
     }, [mapInstance, currentPosition, questId, loadStages]);
 
-
-    
     const calculateDistance = (position1, position2) => {
         if (!position1 || !position2) {
             return Infinity;
@@ -288,16 +285,16 @@ const Play = () => {
                 // 서버 오류로 틀렸을 때에도 모달을 유지
             });
     };
-    
+
     const checkQuestCompletion = () => {
         // 퀘스트의 모든 스테이지를 확인
         api.get(`/api/play/${questId}/points`)
             .then(response => {
                 const stages = response.data;
-    
+
                 // 모든 스테이지의 cleared가 true인지 확인
                 const allCleared = stages.every(stage => stage.cleared);
-    
+
                 if (allCleared) {
                     setShowClearModal(true); // 모든 스테이지가 클리어된 경우 클리어 모달을 표시
                 } else {
@@ -318,7 +315,7 @@ const Play = () => {
             .catch(error => {
                 console.error("퀘스트 상태를 확인하는 중 오류가 발생했습니다.", error);
             });
-    };    
+    };
 
     const handleEndPlay = () => {
         api.post(`/api/play/${questId}/end`)
@@ -331,20 +328,20 @@ const Play = () => {
             .catch(error => {
                 console.error("플레이 종료에 실패했습니다.", error);
             });
-    };    
+        };    
 
-    const getStarImage = () => {
-        if (questClearedCount >= 30) {
-            return `${process.env.PUBLIC_URL}/star5.png`;
-        } else if (questClearedCount >= 20) {
-            return `${process.env.PUBLIC_URL}/star4.png`;
-        } else if (questClearedCount >= 10) {
-            return `${process.env.PUBLIC_URL}/star3.png`;
-        } else if (questClearedCount >= 5) {
-            return `${process.env.PUBLIC_URL}/star2.png`;
-        } else {
-            return `${process.env.PUBLIC_URL}/star1.png`;
-        }
+        const getStarImage = () => {
+            if (questClearedCount >= 30) {
+                return `${process.env.PUBLIC_URL}/star5.png`;
+            } else if (questClearedCount >= 20) {
+                return `${process.env.PUBLIC_URL}/star4.png`;
+            } else if (questClearedCount >= 10) {
+                return `${process.env.PUBLIC_URL}/star3.png`;
+            } else if (questClearedCount >= 5) {
+                return `${process.env.PUBLIC_URL}/star2.png`;
+            } else {
+                return `${process.env.PUBLIC_URL}/star1.png`;
+            }
     };
 
     return (
