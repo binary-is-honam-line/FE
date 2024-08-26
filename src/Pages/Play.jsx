@@ -208,16 +208,14 @@ const Play = () => {
     };
 
     const handleMarkerClick = (stage) => {
-        console.log("Marker clicked for stage:", stage);
-    
+        // currentPosition이 설정되지 않았으면 무시하고 대기
         if (!currentPosition) {
-            console.error("currentPosition is null when trying to handle marker click.");
+            console.error("현재 위치가 설정되지 않았습니다. 위치 확인 중입니다.");
             alert("현재 위치를 확인할 수 없습니다. 잠시 후 다시 시도해주세요.");
             return;
         }
     
-        console.log("Current position at marker click:", currentPosition);
-    
+        // 클릭한 마커와 현재 위치 간의 거리 계산
         const distance = calculateDistance(currentPosition, new kakao.maps.LatLng(stage.lat, stage.lng));
         if (distance > 50) {
             alert("아직 스테이지 근처에 위치하지 않았습니다.");
@@ -232,19 +230,17 @@ const Play = () => {
             }
         })
         .then(response => {
-            console.log("API response:", response.data);
             setCurrentStage(response.data);
             setModalIsOpen(true);
         })
         .catch(error => {
-            console.error("API call failed:", error);
             if (error.response && error.response.status === 403) {
                 alert("아직 스테이지 근처에 위치하지 않았습니다.");
             } else {
                 console.error("퀴즈를 불러오는데 실패했습니다.", error);
             }
         });
-    };    
+    };
     
     const calculateDistance = (position1, position2) => {
         if (!position1 || !position2) {
