@@ -61,17 +61,6 @@ const Play = () => {
         };
     }, [questId, loadStages]);
 
-
-    // 현재 위치가 업데이트된 후에만 마커 클릭 이벤트를 허용
-    useEffect(() => {
-        if (currentPosition) {
-            console.log("currentPosition이 설정되었습니다.", currentPosition);
-            // 필요한 추가 작업을 여기서 수행할 수 있습니다.
-        }
-    }, [currentPosition]);
-
-        
-
     const updateCurrentLocation = useCallback((mapInstance, retryCount = 5) => {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
@@ -207,23 +196,32 @@ const Play = () => {
         }
     };
 
+    // useEffect 수정
+    useEffect(() => {
+        if (currentPosition) {
+            console.log("currentPosition이 설정되었습니다.", currentPosition);
+            // 필요시 추가 작업 수행 가능
+        }
+    }, [currentPosition]);
+
+    // handleMarkerClick 수정
     const handleMarkerClick = (stage) => {
         console.log("Marker clicked for stage:", stage);
         console.log("Current position at marker click:", currentPosition);
-    
+
         // currentPosition이 올바르게 설정되었는지 확인
-        if (!currentPosition || typeof currentPosition.getLat !== 'function' || typeof currentPosition.getLng !== 'function') {
+        if (!currentPosition) {
             console.error("currentPosition is not properly set when trying to handle marker click.");
             alert("현재 위치를 확인할 수 없습니다. 잠시 후 다시 시도해주세요.");
             return;
         }
-    
+
         const distance = calculateDistance(currentPosition, new kakao.maps.LatLng(stage.lat, stage.lng));
         if (distance > 50) {
             alert("아직 스테이지 근처에 위치하지 않았습니다.");
             return;
         }
-    
+
         // 현재 위치와 함께 API 요청
         api.get(`/api/play/${questId}/${stage.userStageId}`, {
             params: {
@@ -244,7 +242,8 @@ const Play = () => {
                 console.error("퀴즈를 불러오는데 실패했습니다.", error);
             }
         });
-    };      
+    };
+
     
     const calculateDistance = (position1, position2) => {
         if (!position1 || !position2) {
