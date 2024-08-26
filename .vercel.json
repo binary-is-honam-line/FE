@@ -1,24 +1,8 @@
 {
-    "redirects": [
-      {
-        "source": "/login",
-        "destination": "https://ukkikki.xyz/login",
-        "statusCode": 307
-      },
-      {
-        "source": "/join",
-        "destination": "https://ukkikki.xyz/join",
-        "statusCode": 307
-      },
-      {
-        "source": "/logout",
-        "destination": "https://ukkikki.xyz/logout",
-        "statusCode": 307
-      },
+    "rewrites": [
       {
         "source": "/api/:path*",
-        "destination": "https://ukkikki.xyz/api/:path*",
-        "statusCode": 307
+        "destination": "https://www.ukkikki.xyz/:path*"
       }
     ],
     "headers": [
@@ -41,4 +25,3 @@
       }
     ]
   }
-  
