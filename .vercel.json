@@ -1,9 +1,19 @@
 {
-    "rewrites": [
+    "redirects": [
       {
         "source": "https://ukkikki.xyz/(.*)",
         "destination": "https://www.ukkikki.xyz/$1",
         "permanent": true
+      }
+    ],
+    "rewrites": [
+      {
+        "source": "/api/:path*",
+        "destination": "https://www.ukkikki.xyz/:path*"
+      },
+      {
+        "source": "/:path*",
+        "destination": "/index.html"
       }
     ],
     "headers": [
