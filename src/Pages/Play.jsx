@@ -209,14 +209,14 @@ const Play = () => {
 
     const handleMarkerClick = (stage) => {
         console.log("Marker clicked for stage:", stage);
+        console.log("Current position at marker click:", currentPosition);
     
-        if (!currentPosition) {
-            console.error("currentPosition is null when trying to handle marker click.");
+        // currentPosition이 올바르게 설정되었는지 확인
+        if (!currentPosition || typeof currentPosition.getLat !== 'function' || typeof currentPosition.getLng !== 'function') {
+            console.error("currentPosition is not properly set when trying to handle marker click.");
             alert("현재 위치를 확인할 수 없습니다. 잠시 후 다시 시도해주세요.");
             return;
         }
-    
-        console.log("Current position at marker click:", currentPosition);
     
         const distance = calculateDistance(currentPosition, new kakao.maps.LatLng(stage.lat, stage.lng));
         if (distance > 50) {
@@ -244,7 +244,7 @@ const Play = () => {
                 console.error("퀴즈를 불러오는데 실패했습니다.", error);
             }
         });
-    };    
+    };      
     
     const calculateDistance = (position1, position2) => {
         if (!position1 || !position2) {
