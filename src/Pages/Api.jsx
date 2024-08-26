@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://ukkikki.xyz', // 상대 경로로 설정
+  baseURL: 'https://www.ukkikki.xyz', // 상대 경로로 설정
   headers: {
     'Content-Type': 'application/json',
   },
