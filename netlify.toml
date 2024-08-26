@@ -1,0 +1,13 @@
+[build]
+  command = "CI= false npm run build"
+  publish = "build"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+  Access-Control-Allow-Origin = "*"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

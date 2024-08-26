@@ -1,1 +1,1 @@
-/api/* https://ukkikki.xyz/:splat 200
+/proxy/* https://ukkikki.xyz/api/:splat 200
