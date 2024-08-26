@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: '/api', // 상대 경로를 사용하여 Vercel의 리라이트 설정을 적용
+  baseURL: process.env.REACT_APP_API_BASE_URL || '/api',
   headers: {
     'Content-Type': 'application/json',
   },
