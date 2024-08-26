@@ -13,8 +13,8 @@
             "destination": "https://ukkikki.xyz/logout"
         },
         {
-            "source": "/api/:path*",
-            "destination": "https://ukkikki.xyz/api/:path*"
+            "source": "/:path*",
+            "destination": "https://ukkikki.xyz/:path*"
         }
     ]
 }
