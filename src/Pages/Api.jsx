@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: '/api', // 상대 경로로 설정
+  baseURL: '/', // 상대 경로로 설정
   headers: {
     'Content-Type': 'application/json',
   },
