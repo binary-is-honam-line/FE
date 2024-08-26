@@ -18,6 +18,7 @@ const Play = () => {
     const [showClearModal, setShowClearModal] = useState(false);
     const [showStarModal, setShowStarModal] = useState(false);
 
+    
     const loadStages = useCallback((questId, mapInstance) => {
         api.get(`/api/play/${questId}/points`)
             .then(response => {
@@ -28,7 +29,6 @@ const Play = () => {
                 console.error("스테이지를 불러오는데 실패했습니다.", error);
             });
     }, []);
-
     useEffect(() => {
         const loadMap = () => {
             kakao.maps.load(() => {
@@ -59,8 +59,16 @@ const Play = () => {
         return () => {
             document.head.removeChild(script);
         };
-    }, [questId, loadStages]);
+    }, [questId]);
 
+    // 현재 위치가 업데이트된 후에만 마커 클릭 이벤트를 허용
+    useEffect(() => {
+        if (currentPosition && mapInstance) {
+            console.log("currentPosition이 설정되었습니다.", currentPosition);
+        }
+    }, [currentPosition, mapInstance]);
+
+    // 현재 위치를 업데이트하는 함수
     const updateCurrentLocation = useCallback((mapInstance, retryCount = 5) => {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
@@ -69,8 +77,8 @@ const Play = () => {
                     const lng = position.coords.longitude;
                     
                     const locPosition = new kakao.maps.LatLng(lat, lng);
-                    setCurrentPosition(locPosition); // 여기서 currentPosition을 업데이트
-    
+                    setCurrentPosition(locPosition);
+
                     if (marker) {
                         marker.setPosition(locPosition);
                     } else {
@@ -81,11 +89,11 @@ const Play = () => {
                         });
                         setMarker(newMarker);
                     }
-    
+
                     if (circle) {
                         circle.setMap(null);
                     }
-    
+
                     const newCircle = new kakao.maps.Circle({
                         center: locPosition,
                         radius: 50,
@@ -96,10 +104,10 @@ const Play = () => {
                         fillColor: '#0066ff',
                         fillOpacity: 0.4,
                     });
-    
+
                     newCircle.setMap(mapInstance);
                     setCircle(newCircle);
-    
+
                     mapInstance.setCenter(locPosition);
                 },
                 (error) => {
@@ -118,7 +126,8 @@ const Play = () => {
             setFallbackLocation(mapInstance);
         }
     }, [marker, circle]);
-    
+
+    // 기본 위치로 설정하는 함수
     const setFallbackLocation = (mapInstance) => {
         const defaultPosition = new kakao.maps.LatLng(35.1595454, 126.8526012);
         setCurrentPosition(defaultPosition);
@@ -147,6 +156,7 @@ const Play = () => {
         mapInstance.setCenter(defaultPosition);
     };
 
+    // 지도에 마커를 표시하는 함수
     const displayStagesOnMap = (stages, mapInstance) => {
         const bounds = new kakao.maps.LatLngBounds();
         const linePath = [];
@@ -196,7 +206,7 @@ const Play = () => {
         }
     };
 
-    // 마커 클릭 이벤트 강화
+    // 마커 클릭 핸들러
     const handleMarkerClick = (stage) => {
         // currentPosition이 설정되지 않았으면 무시하고 대기
         if (!currentPosition) {
@@ -232,15 +242,7 @@ const Play = () => {
         });
     };
 
-    // `useEffect` 의존성 문제 해결
-    useEffect(() => {
-        if (currentPosition && mapInstance) {
-            console.log("currentPosition이 설정되었습니다.", currentPosition);
-            // 필요한 추가 작업을 여기서 수행할 수 있습니다.
-        }
-    }, [currentPosition, mapInstance]);
-
-    
+    // 두 좌표 간의 거리를 계산하는 함수
     const calculateDistance = (position1, position2) => {
         if (!position1 || !position2) {
             return Infinity;
@@ -265,7 +267,6 @@ const Play = () => {
         const distance = R * c; // in meters
         return distance;
     };
-
     const handleQuizSubmit = () => {
         api.post(`/api/play/${questId}/${currentStage.userStageId}`, { answer: quizAnswer })
             .then(response => {
@@ -343,6 +344,7 @@ const Play = () => {
             return `${process.env.PUBLIC_URL}/star1.png`;
         }
     };
+
 
     return (
         <Container>
