@@ -1,15 +1,24 @@
 {
     "redirects": [
       {
-        "source": "/(.*)",
-        "destination": "https://ukkikki.xyz/$1",
-        "permanent": true,
-        "has": [
-          {
-            "type": "host",
-            "value": "www.ukkikki.xyz"
-          }
-        ]
+        "source": "/login",
+        "destination": "https://ukkikki.xyz/login",
+        "permanent": true
+      },
+      {
+        "source": "/join",
+        "destination": "https://ukkikki.xyz/join",
+        "permanent": true
+      },
+      {
+        "source": "/logout",
+        "destination": "https://ukkikki.xyz/logout",
+        "permanent": true
+      },
+      {
+        "source": "/api/:path*",
+        "destination": "https://ukkikki.xyz/api/:path*",
+        "permanent": true
       }
     ],
     "headers": [
