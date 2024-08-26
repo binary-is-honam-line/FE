@@ -1,20 +1,28 @@
 {
     "rewrites": [
-        {
-            "source": "/join",
-            "destination": "https://ukkikki.xyz/join"
-        },
-        {
-            "source": "/login",
-            "destination": "https://ukkikki.xyz/login"
-        },
-        {
-            "source": "/logout",
-            "destination": "https://ukkikki.xyz/logout"
-        },
-        {
-            "source": "/:path*",
-            "destination": "https://ukkikki.xyz/:path*"
-        }
+      {
+        "source": "/:path*",
+        "destination": "https://ukkikki.xyz/:path*"
+      }
+    ],
+    "headers": [
+      {
+        "source": "/(.*)",
+        "headers": [
+          {
+            "key": "Access-Control-Allow-Origin",
+            "value": "*"
+          },
+          {
+            "key": "Access-Control-Allow-Methods",
+            "value": "GET, POST, PUT, DELETE, OPTIONS"
+          },
+          {
+            "key": "Access-Control-Allow-Headers",
+            "value": "X-Requested-With, Content-Type, Authorization"
+          }
+        ]
+      }
     ]
-}
+  }
+  
