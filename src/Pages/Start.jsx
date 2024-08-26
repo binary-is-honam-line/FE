@@ -8,7 +8,7 @@ const Container = styled.div`
     align-items: center;
     height: 100vh;
     position: relative;
-    overflow: hidden; /* 넘치는 부분을 숨김 */
+    overflow: hidden;
 `;
 
 const BackgroundImageLeft = styled.div`
