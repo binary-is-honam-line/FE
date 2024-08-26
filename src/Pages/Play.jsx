@@ -61,7 +61,16 @@ const Play = () => {
         };
     }, [questId, loadStages]);
 
-    
+
+    // 현재 위치가 업데이트된 후에만 마커 클릭 이벤트를 허용
+    useEffect(() => {
+        if (currentPosition) {
+            console.log("currentPosition이 설정되었습니다.", currentPosition);
+            // 필요한 추가 작업을 여기서 수행할 수 있습니다.
+        }
+    }, [currentPosition]);
+
+        
 
     const updateCurrentLocation = useCallback((mapInstance, retryCount = 5) => {
         if (navigator.geolocation) {
@@ -199,7 +208,7 @@ const Play = () => {
     };
 
     const handleMarkerClick = (stage) => {
-        // 현재 위치가 설정되었는지 다시 확인
+        // currentPosition이 설정되지 않았으면 무시하고 대기
         if (!currentPosition) {
             console.error("현재 위치가 설정되지 않았습니다. 위치 확인 중입니다.");
             alert("현재 위치를 확인할 수 없습니다. 잠시 후 다시 시도해주세요.");
