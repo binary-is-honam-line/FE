@@ -61,6 +61,8 @@ const Play = () => {
         };
     }, [questId, loadStages]);
 
+    
+
     const updateCurrentLocation = useCallback((mapInstance, retryCount = 5) => {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
@@ -68,11 +70,8 @@ const Play = () => {
                     const lat = position.coords.latitude;
                     const lng = position.coords.longitude;
                     
-                    // 현재 위치 좌표를 콘솔에 출력
-                    console.log(`현재 위치 - 위도: ${lat}, 경도: ${lng}`);
-                    
                     const locPosition = new kakao.maps.LatLng(lat, lng);
-                    setCurrentPosition(locPosition);
+                    setCurrentPosition(locPosition); // 여기서 currentPosition을 업데이트
     
                     if (marker) {
                         marker.setPosition(locPosition);
@@ -121,7 +120,7 @@ const Play = () => {
             setFallbackLocation(mapInstance);
         }
     }, [marker, circle]);
-
+    
     const setFallbackLocation = (mapInstance) => {
         const defaultPosition = new kakao.maps.LatLng(35.1595454, 126.8526012);
         setCurrentPosition(defaultPosition);
@@ -232,8 +231,8 @@ const Play = () => {
                 console.error("퀴즈를 불러오는데 실패했습니다.", error);
             }
         });
-    };    
-
+    };
+    
     const calculateDistance = (position1, position2) => {
         if (!position1 || !position2) {
             return Infinity;
