@@ -1,8 +1,8 @@
 {
     "rewrites": [
-      {
-        "source": "/api/:path*",
-        "destination": "https://ukkikki.xyz/api/:path*"
-      }
+        {
+            "source": "/api/:path*",
+            "destination": "https://ukkikki.xyz/api/:path*"
+        }
     ]
 }
