@@ -67,10 +67,8 @@ const Play = () => {
                 (position) => {
                     const lat = position.coords.latitude;
                     const lng = position.coords.longitude;
-                    
                     const locPosition = new kakao.maps.LatLng(lat, lng);
                     setCurrentPosition(locPosition); // currentPosition을 업데이트
-    
                     if (marker) {
                         marker.setPosition(locPosition);
                     } else {
@@ -81,11 +79,9 @@ const Play = () => {
                         });
                         setMarker(newMarker);
                     }
-    
                     if (circle) {
                         circle.setMap(null);
                     }
-    
                     const newCircle = new kakao.maps.Circle({
                         center: locPosition,
                         radius: 50,
@@ -96,10 +92,8 @@ const Play = () => {
                         fillColor: '#0066ff',
                         fillOpacity: 0.4,
                     });
-    
                     newCircle.setMap(mapInstance);
                     setCircle(newCircle);
-    
                     mapInstance.setCenter(locPosition);
                 },
                 (error) => {
@@ -158,12 +152,10 @@ const Play = () => {
             }
 
             const position = new kakao.maps.LatLng(stage.lat, stage.lng);
-            
             // 클리어된 스테이지는 treasure.png를, 그렇지 않은 스테이지는 monkey.png를 사용
             const imageSrc = stage.cleared
                 ? `${process.env.PUBLIC_URL}/treasure.png`
                 : `${process.env.PUBLIC_URL}/monkey${stage.sequenceNumber}.png`;
-            
             const imageSize = new kakao.maps.Size(50, 50);
             const imageOption = { offset: new kakao.maps.Point(25, 25) };
             const markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize, imageOption);
@@ -176,7 +168,7 @@ const Play = () => {
             });
 
             // 마커 클릭 이벤트 등록
-            kakao.maps.event.addListener(stageMarker, 'click', () => handleMarkerClick(stage));
+            kakao.maps.event.addListener(stageMarker, () => handleMarkerClick(stage));
 
             linePath.push(position);
             bounds.extend(position);
