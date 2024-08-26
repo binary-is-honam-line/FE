@@ -18,7 +18,6 @@ const Play = () => {
     const [showClearModal, setShowClearModal] = useState(false);
     const [showStarModal, setShowStarModal] = useState(false);
 
-    
     const loadStages = useCallback((questId, mapInstance) => {
         api.get(`/api/play/${questId}/points`)
             .then(response => {
@@ -29,6 +28,7 @@ const Play = () => {
                 console.error("스테이지를 불러오는데 실패했습니다.", error);
             });
     }, []);
+
     useEffect(() => {
         const loadMap = () => {
             kakao.maps.load(() => {
@@ -59,16 +59,8 @@ const Play = () => {
         return () => {
             document.head.removeChild(script);
         };
-    }, [questId]);
+    }, [questId, loadStages]);
 
-    // 현재 위치가 업데이트된 후에만 마커 클릭 이벤트를 허용
-    useEffect(() => {
-        if (currentPosition && mapInstance) {
-            console.log("currentPosition이 설정되었습니다.", currentPosition);
-        }
-    }, [currentPosition, mapInstance]);
-
-    // 현재 위치를 업데이트하는 함수
     const updateCurrentLocation = useCallback((mapInstance, retryCount = 5) => {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
@@ -76,9 +68,12 @@ const Play = () => {
                     const lat = position.coords.latitude;
                     const lng = position.coords.longitude;
                     
+                    // 현재 위치 좌표를 콘솔에 출력
+                    console.log(`현재 위치 - 위도: ${lat}, 경도: ${lng}`);
+                    
                     const locPosition = new kakao.maps.LatLng(lat, lng);
                     setCurrentPosition(locPosition);
-
+    
                     if (marker) {
                         marker.setPosition(locPosition);
                     } else {
@@ -89,14 +84,14 @@ const Play = () => {
                         });
                         setMarker(newMarker);
                     }
-
+    
                     if (circle) {
                         circle.setMap(null);
                     }
-
+    
                     const newCircle = new kakao.maps.Circle({
                         center: locPosition,
-                        radius: 50,
+                        radius: 500,
                         strokeWeight: 5,
                         strokeColor: '#004c80',
                         strokeOpacity: 0.7,
@@ -104,10 +99,10 @@ const Play = () => {
                         fillColor: '#0066ff',
                         fillOpacity: 0.4,
                     });
-
+    
                     newCircle.setMap(mapInstance);
                     setCircle(newCircle);
-
+    
                     mapInstance.setCenter(locPosition);
                 },
                 (error) => {
@@ -127,7 +122,6 @@ const Play = () => {
         }
     }, [marker, circle]);
 
-    // 기본 위치로 설정하는 함수
     const setFallbackLocation = (mapInstance) => {
         const defaultPosition = new kakao.maps.LatLng(35.1595454, 126.8526012);
         setCurrentPosition(defaultPosition);
@@ -156,7 +150,6 @@ const Play = () => {
         mapInstance.setCenter(defaultPosition);
     };
 
-    // 지도에 마커를 표시하는 함수
     const displayStagesOnMap = (stages, mapInstance) => {
         const bounds = new kakao.maps.LatLngBounds();
         const linePath = [];
@@ -206,21 +199,41 @@ const Play = () => {
         }
     };
 
-    // 마커 클릭 핸들러
     const handleMarkerClick = (stage) => {
-        // 위치 검사를 제거하여 무조건 모달을 열도록 수정
-        api.get(`/api/play/${questId}/${stage.userStageId}`)
-            .then(response => {
-                setCurrentStage(response.data);
-                setModalIsOpen(true);
-            })
-            .catch(error => {
+        // 현재 위치가 null인지 다시 확인
+        if (!currentPosition) {
+            console.error("현재 위치가 설정되지 않았습니다. 위치 확인 중입니다.");
+            alert("현재 위치를 확인할 수 없습니다. 잠시 후 다시 시도해주세요.");
+            return;
+        }
+    
+        // 클릭한 마커와 현재 위치 간의 거리 계산
+        const distance = calculateDistance(currentPosition, new kakao.maps.LatLng(stage.lat, stage.lng));
+        if (distance > 500) {
+            alert("아직 스테이지 근처에 위치하지 않았습니다.");
+            return;
+        }
+    
+        // 현재 위치와 함께 API 요청
+        api.get(`/api/play/${questId}/${stage.userStageId}`, {
+            params: {
+                lat: currentPosition.getLat(),
+                lng: currentPosition.getLng()
+            }
+        })
+        .then(response => {
+            setCurrentStage(response.data);
+            setModalIsOpen(true);
+        })
+        .catch(error => {
+            if (error.response && error.response.status === 403) {
+                alert("아직 스테이지 근처에 위치하지 않았습니다.");
+            } else {
                 console.error("퀴즈를 불러오는데 실패했습니다.", error);
-            });
+            }
+        });
     };
 
-
-    // 두 좌표 간의 거리를 계산하는 함수
     const calculateDistance = (position1, position2) => {
         if (!position1 || !position2) {
             return Infinity;
@@ -245,56 +258,46 @@ const Play = () => {
         const distance = R * c; // in meters
         return distance;
     };
+
     const handleQuizSubmit = () => {
         api.post(`/api/play/${questId}/${currentStage.userStageId}`, { answer: quizAnswer })
             .then(response => {
-                console.log(response.data); // 서버 응답을 확인하기 위해 콘솔에 출력
                 if (response.data === "스테이지를 클리어했습니다!") {
                     alert("정답입니다! 스테이지를 클리어했습니다.");
-                    setModalIsOpen(false); // 모달을 닫음
+                    setModalIsOpen(false);
                     checkQuestCompletion(); // 퀘스트 클리어 여부 확인
                 } else {
                     alert("틀렸습니다. 다시 풀어보세요.");
-                    // 모달을 유지 (setModalIsOpen(false) 호출하지 않음)
                 }
             })
             .catch(error => {
-                console.error("퀴즈 제출에 실패했습니다.", error);
-                alert("퀴즈 제출 중 오류가 발생했습니다. 다시 시도해주세요.");
-                // 서버 오류로 틀렸을 때에도 모달을 유지
+                if (error.response && error.response.status === 403) {
+                    alert("틀렸습니다. 다시 풀어보세요.");
+                } else {
+                    console.error("퀴즈 제출에 실패했습니다.", error);
+                    alert("퀴즈 제출 중 오류가 발생했습니다. 다시 시도해주세요.");
+                }
             });
     };
-    
+
     const checkQuestCompletion = () => {
-        // 퀘스트의 모든 스테이지를 확인
-        api.get(`/api/play/${questId}/points`)
+        // 클리어한 퀘스트 갯수를 조회
+        api.get('/api/clear/quest-album/count')
             .then(response => {
-                const stages = response.data;
-    
-                // 모든 스테이지의 cleared가 true인지 확인
-                const allCleared = stages.every(stage => stage.cleared);
-    
-                if (allCleared) {
-                    setShowClearModal(true); // 모든 스테이지가 클리어된 경우 클리어 모달을 표시
-                } else {
-                    // 다른 클리어된 스테이지 확인
-                    api.get('/api/clear/quest-album/count')
-                        .then(response => {
-                            const clearedCount = response.data;
-                            setQuestClearedCount(clearedCount);
-                            if (clearedCount >= 1 && [1, 5, 10, 20, 30].includes(clearedCount)) { 
-                                setShowStarModal(true);
-                            }
-                        })
-                        .catch(error => {
-                            console.error("클리어한 퀘스트 갯수를 가져오는데 실패했습니다.", error);
-                        });
+                const clearedCount = response.data;
+                setQuestClearedCount(clearedCount);
+                if (clearedCount >= 1) { // 1개 이상 클리어한 경우
+                    setShowClearModal(true);
+                }
+                if (clearedCount >= 1 && [1, 5, 10, 20, 30].includes(clearedCount)) { 
+                    // 해당 갯수에 도달한 경우 스타 모달도 보여줌
+                    setShowStarModal(true);
                 }
             })
             .catch(error => {
-                console.error("퀘스트 상태를 확인하는 중 오류가 발생했습니다.", error);
+                console.error("클리어한 퀘스트 갯수를 가져오는데 실패했습니다.", error);
             });
-    };    
+    };
 
     const handleEndPlay = () => {
         api.post(`/api/play/${questId}/end`)
@@ -322,7 +325,6 @@ const Play = () => {
             return `${process.env.PUBLIC_URL}/star1.png`;
         }
     };
-
 
     return (
         <Container>
