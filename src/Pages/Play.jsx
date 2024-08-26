@@ -61,17 +61,6 @@ const Play = () => {
         };
     }, [questId, loadStages]);
 
-
-    // 현재 위치가 업데이트된 후에만 마커 클릭 이벤트를 허용
-    useEffect(() => {
-        if (currentPosition) {
-            console.log("currentPosition이 설정되었습니다.", currentPosition);
-            // 필요한 추가 작업을 여기서 수행할 수 있습니다.
-        }
-    }, [currentPosition]);
-
-        
-
     const updateCurrentLocation = useCallback((mapInstance, retryCount = 5) => {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
@@ -207,6 +196,7 @@ const Play = () => {
         }
     };
 
+    // 마커 클릭 이벤트 강화
     const handleMarkerClick = (stage) => {
         // currentPosition이 설정되지 않았으면 무시하고 대기
         if (!currentPosition) {
@@ -214,14 +204,14 @@ const Play = () => {
             alert("현재 위치를 확인할 수 없습니다. 잠시 후 다시 시도해주세요.");
             return;
         }
-    
+
         // 클릭한 마커와 현재 위치 간의 거리 계산
         const distance = calculateDistance(currentPosition, new kakao.maps.LatLng(stage.lat, stage.lng));
         if (distance > 50) {
             alert("아직 스테이지 근처에 위치하지 않았습니다.");
             return;
         }
-    
+
         // 현재 위치와 함께 API 요청
         api.get(`/api/play/${questId}/${stage.userStageId}`, {
             params: {
@@ -241,6 +231,15 @@ const Play = () => {
             }
         });
     };
+
+    // `useEffect` 의존성 문제 해결
+    useEffect(() => {
+        if (currentPosition && mapInstance) {
+            console.log("currentPosition이 설정되었습니다.", currentPosition);
+            // 필요한 추가 작업을 여기서 수행할 수 있습니다.
+        }
+    }, [currentPosition, mapInstance]);
+
     
     const calculateDistance = (position1, position2) => {
         if (!position1 || !position2) {
