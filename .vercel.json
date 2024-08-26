@@ -1,9 +1,15 @@
 {
-    "rewrites": [
+    "redirects": [
       {
-        "source": "https://ukkikki.xyz/(.*)",
-        "destination": "https://www.ukkikki.xyz/$1",
-        "permanent": true
+        "source": "/(.*)",
+        "destination": "https://ukkikki.xyz/$1",
+        "permanent": true,
+        "has": [
+          {
+            "type": "host",
+            "value": "www.ukkikki.xyz"
+          }
+        ]
       }
     ],
     "headers": [
