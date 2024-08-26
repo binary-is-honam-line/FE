@@ -196,25 +196,16 @@ const Play = () => {
         }
     };
 
-    // useEffect 수정
-    useEffect(() => {
-        if (currentPosition) {
-            console.log("currentPosition이 설정되었습니다.", currentPosition);
-            // 필요시 추가 작업 수행 가능
-        }
-    }, [currentPosition]);
-
-    // handleMarkerClick 수정
-    const handleMarkerClick = (stage) => {
-        console.log("Marker clicked for stage:", stage);
-        console.log("Current position at marker click:", currentPosition);
-
-        // currentPosition이 올바르게 설정되었는지 확인
+    // 마커 클릭 이벤트에서 currentPosition을 직접 참조하지 않고 콜백 내에서 확인
+    const handleMarkerClick = useCallback((stage) => {
         if (!currentPosition) {
-            console.error("currentPosition is not properly set when trying to handle marker click.");
+            console.error("currentPosition is null when trying to handle marker click.");
             alert("현재 위치를 확인할 수 없습니다. 잠시 후 다시 시도해주세요.");
             return;
         }
+
+        console.log("Marker clicked for stage:", stage);
+        console.log("Current position at marker click:", currentPosition);
 
         const distance = calculateDistance(currentPosition, new kakao.maps.LatLng(stage.lat, stage.lng));
         if (distance > 50) {
@@ -242,7 +233,15 @@ const Play = () => {
                 console.error("퀴즈를 불러오는데 실패했습니다.", error);
             }
         });
-    };
+    }, [currentPosition, questId]);
+
+    // 마커 생성 및 클릭 이벤트 등록은 currentPosition이 설정된 이후에만 실행되도록
+    useEffect(() => {
+        if (mapInstance && currentPosition) {
+            loadStages(questId, mapInstance);
+        }
+    }, [mapInstance, currentPosition, questId, loadStages]);
+
 
     
     const calculateDistance = (position1, position2) => {
