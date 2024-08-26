@@ -2,7 +2,7 @@
     "rewrites": [
       {
         "source": "/:path*",
-        "destination": "https://ukkikki.xyz/:path*"
+        "destination": "https://www.ukkikki.xyz/:path*"
       }
     ],
     "headers": [
