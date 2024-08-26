@@ -1,11 +1,7 @@
 import axios from 'axios';
 
-// 기본 baseURL 설정
-const PROXY = '/proxy'; // 프록시 경로 사용
-const baseURL = `${PROXY}/api`; // 프록시와 함께 API 경로 설정
-
 const api = axios.create({
-  baseURL,
+  baseURL: '/api', // 상대 경로를 사용하여 Vercel의 리라이트 설정을 적용
   headers: {
     'Content-Type': 'application/json',
   },
