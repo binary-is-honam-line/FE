@@ -42,6 +42,10 @@ const Play = () => {
 
                 // 맵이 로드된 후에 위치 정보를 업데이트
                 updateCurrentLocation(mapInstance);
+
+                if (questId) {
+                    loadStages(questId, mapInstance);
+                }
             });
         };
 
@@ -55,13 +59,7 @@ const Play = () => {
         return () => {
             document.head.removeChild(script);
         };
-    }, []);
-
-    useEffect(() => {
-        if (mapInstance && currentPosition) {
-            loadStages(questId, mapInstance);
-        }
-    }, [mapInstance, currentPosition, questId, loadStages]);
+    }, [questId, loadStages]);
 
     const updateCurrentLocation = useCallback((mapInstance, retryCount = 5) => {
         if (navigator.geolocation) {
@@ -69,10 +67,10 @@ const Play = () => {
                 (position) => {
                     const lat = position.coords.latitude;
                     const lng = position.coords.longitude;
-
+                    
                     const locPosition = new kakao.maps.LatLng(lat, lng);
-                    setCurrentPosition(locPosition);
-
+                    setCurrentPosition(locPosition); // currentPosition을 업데이트
+    
                     if (marker) {
                         marker.setPosition(locPosition);
                     } else {
@@ -83,11 +81,11 @@ const Play = () => {
                         });
                         setMarker(newMarker);
                     }
-
+    
                     if (circle) {
                         circle.setMap(null);
                     }
-
+    
                     const newCircle = new kakao.maps.Circle({
                         center: locPosition,
                         radius: 50,
@@ -98,10 +96,10 @@ const Play = () => {
                         fillColor: '#0066ff',
                         fillOpacity: 0.4,
                     });
-
+    
                     newCircle.setMap(mapInstance);
                     setCircle(newCircle);
-
+    
                     mapInstance.setCenter(locPosition);
                 },
                 (error) => {
@@ -160,12 +158,12 @@ const Play = () => {
             }
 
             const position = new kakao.maps.LatLng(stage.lat, stage.lng);
-
+            
             // 클리어된 스테이지는 treasure.png를, 그렇지 않은 스테이지는 monkey.png를 사용
             const imageSrc = stage.cleared
                 ? `${process.env.PUBLIC_URL}/treasure.png`
                 : `${process.env.PUBLIC_URL}/monkey${stage.sequenceNumber}.png`;
-
+            
             const imageSize = new kakao.maps.Size(50, 50);
             const imageOption = { offset: new kakao.maps.Point(25, 25) };
             const markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize, imageOption);
@@ -178,7 +176,7 @@ const Play = () => {
             });
 
             // 마커 클릭 이벤트 등록
-            kakao.maps.event.addListener(stageMarker, () => handleMarkerClick(stage));
+            kakao.maps.event.addListener(stageMarker, 'click', () => handleMarkerClick(stage));
 
             linePath.push(position);
             bounds.extend(position);
@@ -199,7 +197,6 @@ const Play = () => {
     };
 
     const handleMarkerClick = useCallback((stage) => {
-        // currentPosition이 업데이트되었는지 확인 후, 클릭 이벤트 허용
         if (!currentPosition) {
             console.error("currentPosition is null when trying to handle marker click.");
             alert("현재 위치를 확인할 수 없습니다. 잠시 후 다시 시도해주세요.");
@@ -236,6 +233,12 @@ const Play = () => {
             }
         });
     }, [currentPosition, questId]);
+
+    useEffect(() => {
+        if (mapInstance && currentPosition) {
+            loadStages(questId, mapInstance);
+        }
+    }, [mapInstance, currentPosition, questId, loadStages]);
 
     const calculateDistance = (position1, position2) => {
         if (!position1 || !position2) {
@@ -278,18 +281,23 @@ const Play = () => {
             .catch(error => {
                 console.error("퀴즈 제출에 실패했습니다.", error);
                 alert("퀴즈 제출 중 오류가 발생했습니다. 다시 시도해주세요.");
+                // 서버 오류로 틀렸을 때에도 모달을 유지
             });
     };
 
     const checkQuestCompletion = () => {
+        // 퀘스트의 모든 스테이지를 확인
         api.get(`/api/play/${questId}/points`)
             .then(response => {
                 const stages = response.data;
+
+                // 모든 스테이지의 cleared가 true인지 확인
                 const allCleared = stages.every(stage => stage.cleared);
 
                 if (allCleared) {
-                    setShowClearModal(true);
+                    setShowClearModal(true); // 모든 스테이지가 클리어된 경우 클리어 모달을 표시
                 } else {
+                    // 다른 클리어된 스테이지 확인
                     api.get('/api/clear/quest-album/count')
                         .then(response => {
                             const clearedCount = response.data;
@@ -313,27 +321,28 @@ const Play = () => {
             .then(() => {
                 alert("플레이가 종료되었습니다.");
                 setTimeout(() => {
-                    navigate('/player'); 
-                }, 3000); 
+                    navigate('/player'); // 3초 후 /player 페이지로 이동
+                }, 3000); // 3000ms = 3초
             })
             .catch(error => {
                 console.error("플레이 종료에 실패했습니다.", error);
-            });        
-        };    
+            });
+    };
 
-            const getStarImage = () => {
-                if (questClearedCount >= 30) {
-                    return `${process.env.PUBLIC_URL}/star5.png`;
-                } else if (questClearedCount >= 20) {
-                    return `${process.env.PUBLIC_URL}/star4.png`;
-                } else if (questClearedCount >= 10) {
-                    return `${process.env.PUBLIC_URL}/star3.png`;
-                } else if (questClearedCount >= 5) {
-                    return `${process.env.PUBLIC_URL}/star2.png`;
-                } else {
-                    return `${process.env.PUBLIC_URL}/star1.png`;
-                }
-        }; 
+    const getStarImage = () => {
+        if (questClearedCount >= 30) {
+            return `${process.env.PUBLIC_URL}/star5.png`;
+        } else if (questClearedCount >= 20) {
+            return `${process.env.PUBLIC_URL}/star4.png`;
+        } else if (questClearedCount >= 10) {
+            return `${process.env.PUBLIC_URL}/star3.png`;
+        } else if (questClearedCount >= 5) {
+            return `${process.env.PUBLIC_URL}/star2.png`;
+        } else {
+            return `${process.env.PUBLIC_URL}/star1.png`;
+        }
+    };
+
 
     return (
         <Container>
